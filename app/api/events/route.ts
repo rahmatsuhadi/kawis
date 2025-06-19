@@ -90,7 +90,7 @@ export async function GET(req: Request) {
     const limit = parseInt(searchParams.get("limit") || "10", 10);
     const offset = parseInt(searchParams.get("offset") || "0", 10);
 
-    let whereClause: any = {};
+     const whereClause: { isApproved?: boolean } = {};
     const session = await getServerSession(authOptions);
 
     // Logika filter berdasarkan status

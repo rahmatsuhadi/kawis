@@ -2,13 +2,13 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "../ui/button"
-import { Heart, LocateIcon, MapPin, MessageSquare, MoreHorizontal, Share2 } from "lucide-react"
+import { Heart, MapPin, MessageSquare, MoreHorizontal, Share2 } from "lucide-react"
 import { PostResponse } from "./Post"
 import { formatDistanceToNow } from "date-fns"
 import { id } from "date-fns/locale"
 import getInitialName from "@/lib/getInitialName"
 import { useState } from "react"
-import { Badge } from "../ui/badge"
+import Image from "next/image"
 
 
 
@@ -59,7 +59,7 @@ export default function PostCard({ post }: { post: PostResponse }) {
 
                 {/* Post Image */}
                 <div className="mb-4 rounded-lg overflow-hidden">
-                    <img
+                    <Image
                         src={post.images[0].imageUrl || "/placeholder.svg"}
                         alt="Post image"
                         width={400}

@@ -3,11 +3,10 @@
 import { Button } from "@/components/ui/button";
 import { Home, MapPin, Search, Calendar, MessageCircle, Shield, Users } from "lucide-react";
 import Link from "next/link"; // Import Link dari Next.js
-import { usePathname, useRouter } from "next/navigation"; // Import usePathname untuk menandai link aktif
+import { usePathname } from "next/navigation"; // Import usePathname untuk menandai link aktif
 import { useSession } from "next-auth/react"; // Import useSession untuk akses sesi
 
 export default function Sidebar() {
-  const router = useRouter();
   const pathname = usePathname(); // Hook untuk mendapatkan path URL saat ini
   const { data: session, status } = useSession(); // Dapatkan sesi user
 

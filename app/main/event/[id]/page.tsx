@@ -1,20 +1,21 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { Home, MapPin, Search, Calendar, MessageCircle, Clock, User, CalendarDays } from "lucide-react"
+import {  MapPin, Clock, User, CalendarDays } from "lucide-react"
 import EventImageDetail from "@/components/event/CardEventImage"
 import { Metadata } from "next"
-import { Event, EventImage, EventPostImage } from "@prisma/client"
-import { redirect } from "next/navigation"
+import { Event, EventImage } from "@prisma/client"
+
 import { format } from "date-fns"
 import { id } from "date-fns/locale"
 import Link from "next/link"
-import { EventResponse } from "@/components/event/EventList"
+
 import { PostResponse } from "@/components/post/Post"
 import Image from "next/image"
+import { Decimal } from "@prisma/client/runtime/library"
 
 interface EventDetailPageProps {
-    params: { id: string };
+    params: Promise<{ id: string }>;
 }
 
 export const metadata: Metadata = {
@@ -48,7 +49,7 @@ interface EventDetail extends Event {
 }
 
 // Simple Map Component for event location
-function EventLocationMap({ location }: { location: { lat: any; lng: any; address: string } }) {
+function EventLocationMap({  }: { location: { lat: number | Decimal; lng: number | Decimal; address: string } }) {
     return (
         <div className="relative w-32 h-32">
             <div className="w-full h-full rounded-full border-4 border-orange-400 overflow-hidden relative bg-gradient-to-br from-teal-100 to-teal-200">
@@ -78,7 +79,7 @@ function EventLocationMap({ location }: { location: { lat: any; lng: any; addres
 
 export default async function EventDetailPage({ params }: EventDetailPageProps) {
 
-    const event = await getEventDetail(await (params.id));
+    const event = await getEventDetail((await params).id);
 
     if (!event) {
         return (

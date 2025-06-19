@@ -6,14 +6,14 @@ const prisma = new PrismaClient();
 
 // Definisikan tipe untuk params agar TypeScript aman
 interface EventDetailParams {
-  params: {
+  params: Promise<{
     id: string; // ID event akan menjadi string
-  };
+  }>
 }
 
 export async function GET(req: Request, { params }: EventDetailParams) {
   try {
-    const { id } = params; // Ambil ID event dari params URL
+    const { id } = await params; // Ambil ID event dari params URL
 
     // 1. Validasi ID
     if (!id) {

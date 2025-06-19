@@ -5,15 +5,15 @@ import { getEventDetail } from "../page"
 import { Button } from "@/components/ui/button";
 
 // Mock data for available events
-const availableEvents = [
-  { id: 1, name: "Pasar Seni Gabusan Berbagi", date: "23 Feb 2025" },
-  { id: 2, name: "Festival Budaya Yogyakarta", date: "25 Feb 2025" },
-  { id: 3, name: "Pasar Malam Paseban", date: "28 Feb 2025" },
-  { id: 4, name: "Konser Musik Tradisional", date: "2 Mar 2025" },
-]
+// const availableEvents = [
+//   { id: 1, name: "Pasar Seni Gabusan Berbagi", date: "23 Feb 2025" },
+//   { id: 2, name: "Festival Budaya Yogyakarta", date: "25 Feb 2025" },
+//   { id: 3, name: "Pasar Malam Paseban", date: "28 Feb 2025" },
+//   { id: 4, name: "Konser Musik Tradisional", date: "2 Mar 2025" },
+// ]
 
 interface EventDetailPageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 

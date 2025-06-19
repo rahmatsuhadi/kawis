@@ -1,28 +1,19 @@
-import { redirect } from "next/navigation";
-import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth";
-
-/**
- * sebagai pengunjunga atau masyarakat raja amapat kira perlu sadari bahawa 
- * keindahan alam bukan utnuk diexplotiasi tai untuk dijaga 
- * 
- * tambang nilke mungkng menguntungkan untuk seata tapi kerusakanya belangusng sealmanya 
- * 
- * mari kita pilih keindahaan alam yang lestari atau penyesalahan yang abana
- */
-
-
+import { getServerSession } from "next-auth";
+import { redirect } from 'next/navigation';
 
 export default async function Home() {
-
   const session = await getServerSession(authOptions);
-  console.log(session)
+
+  // Jika session tidak ada, redirect ke halaman login
   if (!session) {
     redirect("/login");
+    return; // Pastikan tidak ada kode lainnya yang dijalankan setelah redirect
   }
 
+  // Jika session ada, redirect ke halaman utama
   redirect("/main");
 
-  
+  // Kode ini tidak akan dijalankan karena redirect sudah memutus eksekusi
+  return <></>;
 }
-1

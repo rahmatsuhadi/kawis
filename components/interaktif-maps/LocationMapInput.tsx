@@ -2,11 +2,11 @@
 
 import { useState, useEffect, useCallback, useRef } from "react"
 import Map, { Marker } from "react-map-gl/mapbox"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { MapPin, Navigation, Copy, Check } from "lucide-react"
+import { MapPin, Navigation, } from "lucide-react"
 import "mapbox-gl/dist/mapbox-gl.css"
 
 interface GeolocationMapProps {
@@ -27,10 +27,9 @@ export default function GeolocationMap({
   const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isDragging, setIsDragging] = useState(false)
-  const [copied, setCopied] = useState(false)
   const [address, setAddress] = useState("")
 
-   // Refs for debouncing - Fixed with proper initial values
+  // Refs for debouncing - Fixed with proper initial values
   const debounceRef = useRef<NodeJS.Timeout | null>(null)
   const lastOnChangeRef = useRef<{ lat: number; lng: number } | null>(null)
 
@@ -84,7 +83,7 @@ export default function GeolocationMap({
           setIsLoading(false)
         },
         (error) => {
-          // console.error("Error getting location:", error)
+          console.error("Error getting location:", error)
           // Default to Jakarta if geolocation fails
           const defaultLocation = { lat: -7.791863, lng: 110.368183 }
           setLocation(defaultLocation)
@@ -107,42 +106,45 @@ export default function GeolocationMap({
   }, [initialLat, initialLng, debouncedOnChange])
 
   // Handle marker drag - only update local state during drag
-  const handleMarkerDrag = useCallback((event: any) => {
+  const handleMarkerDrag = useCallback((event: { lngLat: { lat: number; lng: number } }) => {
     const newLocation = {
       lat: event.lngLat.lat,
       lng: event.lngLat.lng,
     }
     setLocation(newLocation)
+    if (onChange) {
+      // Optional: hanya panggil onChange jika perlu
+    }
     // Don't call onChange during drag to prevent performance issues
-  }, [])
+  }, [onChange])
 
   // Handle drag end - call onChange only when drag is complete
-  const handleMarkerDragEnd = useCallback(
-    (event: any) => {
-      const newLocation = {
-        lat: event.lngLat.lat,
-        lng: event.lngLat.lng,
-      }
-      setLocation(newLocation)
-      setIsDragging(false)
-      debouncedOnChange(newLocation.lat, newLocation.lng)
-    },
-    [debouncedOnChange],
-  )
+  // const handleMarkerDragEnd = useCallback(
+  //   (event: any) => {
+  //     const newLocation = {
+  //       lat: event.lngLat.lat,
+  //       lng: event.lngLat.lng,
+  //     }
+  //     setLocation(newLocation)
+  //     setIsDragging(false)
+  //     debouncedOnChange(newLocation.lat, newLocation.lng)
+  //   },
+  //   [debouncedOnChange],
+  // )
 
   // Copy coordinates to clipboard
-  const copyCoordinates = async () => {
-    if (!location) return
+  // const copyCoordinates = async () => {
+  //   if (!location) return
 
-    const coordinates = `${location.lat.toFixed(6)}, ${location.lng.toFixed(6)}`
-    try {
-      await navigator.clipboard.writeText(coordinates)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    } catch (err) {
-      console.error("Failed to copy coordinates:", err)
-    }
-  }
+  //   const coordinates = `${location.lat.toFixed(6)}, ${location.lng.toFixed(6)}`
+  //   try {
+  //     await navigator.clipboard.writeText(coordinates)
+  //     setCopied(true)
+  //     setTimeout(() => setCopied(false), 2000)
+  //   } catch (err) {
+  //     console.error("Failed to copy coordinates:", err)
+  //   }
+  // }
 
   // Reverse geocoding to get address (simplified)
   const getAddress = useCallback(async (lat: number, lng: number) => {
@@ -156,12 +158,13 @@ export default function GeolocationMap({
   }, [])
 
   // Reset to current location
-  const resetToCurrentLocation = useCallback(() => {
-    getCurrentLocation()
-  }, [getCurrentLocation])
+  // const resetToCurrentLocation = useCallback(() => {
+  //   getCurrentLocation()
+  // }, [getCurrentLocation])
 
   useEffect(() => {
     getCurrentLocation()
+     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []) // Remove getCurrentLocation from dependencies to prevent loops
 
   useEffect(() => {
@@ -203,54 +206,54 @@ export default function GeolocationMap({
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0"> */}
-          <div style={{ height, width }} className="relative">
-            {location && (
-              <Map
-                mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN}
-                initialViewState={{
-                  longitude: location.lng,
-                  latitude: location.lat,
-                  zoom: 15,
-                }}
-                style={{ width: "100%", height: "100%" }}
-                mapStyle={process.env.NEXT_PUBLIC_MAPBOX_STYLE_URL}
-                attributionControl={false}
-                dragPan={!isDragging}
-              >
-                {/* Draggable Marker */}
-                <Marker
-                  longitude={location.lng}
-                  latitude={location.lat}
-                  anchor="bottom"
-                  draggable
-                  onDrag={handleMarkerDrag}
-                  onDragStart={() => setIsDragging(true)}
-                  onDragEnd={() => setIsDragging(false)}
-                >
-                  <div className="relative">
-                    {/* Marker Pin */}
-                    <div className="w-8 h-8 bg-orange-500 rounded-full border-2 border-white shadow-lg flex items-center justify-center cursor-move hover:bg-orange-600 transition-colors">
-                      <MapPin className="h-4 w-4 text-white" />
-                    </div>
-                    {/* Marker Shadow */}
-                    <div className="absolute top-6 left-1/2 transform -translate-x-1/2 w-4 h-2 bg-black opacity-20 rounded-full blur-sm"></div>
-                  </div>
-                </Marker>
-              </Map>
-            )}
+      <div style={{ height, width }} className="relative">
+        {location && (
+          <Map
+            mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN}
+            initialViewState={{
+              longitude: location.lng,
+              latitude: location.lat,
+              zoom: 15,
+            }}
+            style={{ width: "100%", height: "100%" }}
+            mapStyle={process.env.NEXT_PUBLIC_MAPBOX_STYLE_URL}
+            attributionControl={false}
+            dragPan={!isDragging}
+          >
+            {/* Draggable Marker */}
+            <Marker
+              longitude={location.lng}
+              latitude={location.lat}
+              anchor="bottom"
+              draggable
+              onDrag={handleMarkerDrag}
+              onDragStart={() => setIsDragging(true)}
+              onDragEnd={() => setIsDragging(false)}
+            >
+              <div className="relative">
+                {/* Marker Pin */}
+                <div className="w-8 h-8 bg-orange-500 rounded-full border-2 border-white shadow-lg flex items-center justify-center cursor-move hover:bg-orange-600 transition-colors">
+                  <MapPin className="h-4 w-4 text-white" />
+                </div>
+                {/* Marker Shadow */}
+                <div className="absolute top-6 left-1/2 transform -translate-x-1/2 w-4 h-2 bg-black opacity-20 rounded-full blur-sm"></div>
+              </div>
+            </Marker>
+          </Map>
+        )}
 
-            {/* Floating Controls */}
-            <div className="absolute top-4 right-4 z-10">
-              <Button
-                onClick={getCurrentLocation}
-                size="sm"
-                className="bg-white hover:bg-gray-50 text-gray-700 border shadow-md"
-              >
-                <Navigation className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        {/* </CardContent>
+        {/* Floating Controls */}
+        <div className="absolute top-4 right-4 z-10">
+          <Button
+            onClick={getCurrentLocation}
+            size="sm"
+            className="bg-white hover:bg-gray-50 text-gray-700 border shadow-md"
+          >
+            <Navigation className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+      {/* </CardContent>
       </Card> */}
 
       {/* Location Info */}
@@ -276,7 +279,7 @@ export default function GeolocationMap({
             <Input id="address" value={address} readOnly className="bg-gray-50" />
           </div>
 
-          
+
         </CardContent>
       </Card>
     </div>

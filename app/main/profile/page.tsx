@@ -4,31 +4,15 @@ import { useState } from "react"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
 import {
-  Home,
-  MapPin,
-  Search,
-  Calendar,
-  MessageCircle,
-  User,
   Edit,
   Camera,
-  Mail,
-  Phone,
   MapPinIcon,
   CalendarDays,
-  Shield,
-  Heart,
-  MessageSquare,
-  Share2,
-  LogOut,
 } from "lucide-react"
 import LogoutModal from "@/components/profile/ModalLogout"
 import { useSession } from "next-auth/react"
@@ -56,60 +40,49 @@ const userData = {
 }
 
 // Mock user's events
-const userEvents = [
-  {
-    id: 1,
-    name: "Festival Budaya Yogyakarta",
-    date: "25 Mei 2024",
-    status: "approved",
-    attendees: 120,
-    image: "/placeholder.svg?height=100&width=150",
-  },
-  {
-    id: 2,
-    name: "Pasar Malam Tradisional",
-    date: "30 Mei 2024",
-    status: "pending",
-    attendees: 0,
-    image: "/placeholder.svg?height=100&width=150",
-  },
-]
+// const userEvents = [
+//   {
+//     id: 1,
+//     name: "Festival Budaya Yogyakarta",
+//     date: "25 Mei 2024",
+//     status: "approved",
+//     attendees: 120,
+//     image: "/placeholder.svg?height=100&width=150",
+//   },
+//   {
+//     id: 2,
+//     name: "Pasar Malam Tradisional",
+//     date: "30 Mei 2024",
+//     status: "pending",
+//     attendees: 0,
+//     image: "/placeholder.svg?height=100&width=150",
+//   },
+// ]
 
 // Mock user's posts
-const userPosts = [
-  {
-    id: 1,
-    content: "Amazing experience at the cultural festival! The traditional performances were absolutely stunning.",
-    image: "/placeholder.svg?height=200&width=300",
-    likes: 24,
-    comments: 8,
-    timeAgo: "2 hours ago",
-  },
-  {
-    id: 2,
-    content: "Looking forward to organizing more community events. Let's bring people together!",
-    image: "/placeholder.svg?height=200&width=300",
-    likes: 18,
-    comments: 5,
-    timeAgo: "1 day ago",
-  },
-]
+// const userPosts = [
+//   {
+//     id: 1,
+//     content: "Amazing experience at the cultural festival! The traditional performances were absolutely stunning.",
+//     image: "/placeholder.svg?height=200&width=300",
+//     likes: 24,
+//     comments: 8,
+//     timeAgo: "2 hours ago",
+//   },
+//   {
+//     id: 2,
+//     content: "Looking forward to organizing more community events. Let's bring people together!",
+//     image: "/placeholder.svg?height=200&width=300",
+//     likes: 18,
+//     comments: 5,
+//     timeAgo: "1 day ago",
+//   },
+// ]
 
-interface ProfileProps {
-  onNavigateHome: () => void
-  onNavigateMaps: () => void
-  onNavigatePostEvent: () => void
-  onNavigateEventManagement?: () => void
-  onNavigateUserManagement?: () => void
-}
+
 
 export default function Profile({
-  onNavigateHome,
-  onNavigateMaps,
-  onNavigatePostEvent,
-  onNavigateEventManagement,
-  onNavigateUserManagement,
-}: ProfileProps) {
+}) {
   const [isEditing, setIsEditing] = useState(false)
   // const [editedData, setEditedData] = useState(userData)
 

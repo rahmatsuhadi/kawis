@@ -1,6 +1,6 @@
 // lib/image-service.ts
 import { supabase } from '@/lib/supabase'; // Pastikan Anda sudah punya file ini
-import { toast } from 'sonner'; // Untuk notifikasi
+// import { toast } from 'sonner'; // Untuk notifikasi
 
 const SUPABASE_BUCKET_NAME = 'kawis-kita'; // Ganti dengan nama bucket Supabase Anda
 
@@ -36,8 +36,14 @@ export async function uploadImage(file: File): Promise<string> {
     }
 
     return publicUrlData.publicUrl;
-  } catch (error: any) {
-    throw new Error(error.message || 'Terjadi kesalahan tidak diketahui saat mengunggah gambar.');
+  } catch (error) {
+    if (error instanceof Error) {
+      // Jika error adalah instance dari Error, ambil message-nya
+      throw new Error(error.message || 'Terjadi kesalahan tidak diketahui saat mengunggah gambar.');
+    } else {
+      // Jika error bukan instance dari Error (misalnya objek lain)
+      throw new Error('Terjadi kesalahan yang tidak diketahui.');
+    }
   }
 }
 
@@ -68,12 +74,24 @@ export async function deleteImage(imageUrl: string): Promise<void> {
       .remove([filePathInBucket]); // Menerima array path file
 
     if (error) {
-      console.error('Supabase delete error:', error);
-      throw new Error(`Gagal menghapus gambar: ${error.message}`);
+      if (error instanceof Error) {
+        // Jika error adalah instance dari Error, ambil message-nya
+        throw new Error(error.message || 'Terjadi kesalahan tidak diketahui saat menghapus gambar.');
+      } else {
+        // Jika error bukan instance dari Error (misalnya objek lain)
+        throw new Error('Terjadi kesalahan yang tidak diketahui.');
+      }
     }
 
     console.log(`Gambar ${filePathInBucket} berhasil dihapus dari storage.`);
-  } catch (error: any) {
-    throw new Error(error.message || 'Terjadi kesalahan tidak diketahui saat menghapus gambar.');
+  } catch (error) {
+    if (error instanceof Error) {
+    // Jika error adalah instance dari Error, ambil message-nya
+    throw new Error(error.message || 'Terjadi kesalahan tidak diketahui saat menhapus gambar.');
+  } else {
+    // Jika error bukan instance dari Error (misalnya objek lain)
+    throw new Error('Terjadi kesalahan yang tidak diketahui.');
+  }
+
   }
 }

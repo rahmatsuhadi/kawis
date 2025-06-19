@@ -1,5 +1,4 @@
 import Image from "next/image";
-import LoginForm from "@/components/login/LoginForm";
 import RegisterForm from "@/components/register/RegisterForm";
 
 export default function Register() {

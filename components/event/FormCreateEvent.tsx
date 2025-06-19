@@ -110,12 +110,20 @@ export default function FormCreateEvent() {
       toast.dismiss(uploadToastId);
       toast.success(`${newUploadedUrls.length} gambar berhasil diunggah!`);
 
-    } catch (error: any) {
+    } catch (error) {
       setIsUploading(false)
       toast.dismiss(uploadToastId);
-      toast.error("Gagal Mengunggah Gambar", {
-        description: error.message || "Terjadi kesalahan saat mengunggah gambar.",
-      });
+
+      if (error instanceof Error) {
+        // Jika error adalah instance dari Error, ambil message-nya
+        toast.error("Gagal Mengunggah Gambar", {
+          description: error.message || "Terjadi kesalahan tidak diketahui saat mengunggah gambar",
+        });
+      } else {
+        toast.error("Gagal Mengunggah Gambar", {
+          description: "Terjadi kesalahan yang tidak diketahui.",
+        });
+      }
       console.error("Upload Error:", error);
     } finally {
       setIsUploading(false);
@@ -130,9 +138,19 @@ export default function FormCreateEvent() {
       await deleteImage(imageUrlToRemove);
       setUploadedImageUrls(uploadedImageUrls.filter((_, i) => i !== index));
       toast.info("Gambar berhasil dihapus.");
-    } catch (error: any) {
+    } catch (error) {
+      let description = "Terjadi kesalahan saat menghapus gambar.";
+      if (error instanceof Error) {
+        // Jika error adalah instance dari Error, ambil message-nya
+        description = error.message;
+      } else {
+        // Jika error bukan instance dari Error (misalnya objek lain)
+        description = "Terjadi kesalahan yang tidak diketahui.";
+
+      }
+
       toast.error("Gagal Menghapus Gambar", {
-        description: error.message || "Terjadi kesalahan saat menghapus gambar.",
+        description: description,
       });
       console.error("Delete Error:", error);
     }
@@ -167,8 +185,6 @@ export default function FormCreateEvent() {
       return;
     }
 
-    const dummyLatitude = -6.2088;
-    const dummyLongitude = 106.8456;
 
     const eventData = {
       name: eventName,
@@ -241,7 +257,7 @@ export default function FormCreateEvent() {
           {/* Anonymous Name */}
           <div className="space-y-2">
             <Label htmlFor="anonymousName" className="text-sm lg:text-base font-medium">
-              Nama Pembuat Event (Opsional, gunakan "Anonim" jika kosong)
+              {`Nama Pembuat Event (Opsional, gunakan "Anonim" jika kosong)`}
             </Label>
             <Input
               id="anonymousName"

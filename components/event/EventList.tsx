@@ -2,12 +2,10 @@
 import { Badge } from "@/components/ui/badge"
 import { Calendar } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { supabase } from "@/lib/supabase"
 import { useQuery } from "@tanstack/react-query"
-import { IEvent } from "@/types"
-import { toast } from "sonner"
 import { Event, EventImage } from "@prisma/client"
 import { useRouter } from "next/navigation"
+import Image from "next/image"
 
 
 export async function fetchEvents(): Promise<EventsApiResponse> {
@@ -46,9 +44,6 @@ export default function EventList() {
   const {
     data,
     isLoading,
-    isError,
-    error,
-    refetch,
   } = useQuery<EventsApiResponse, Error>({ // Gunakan EventsApiResponse sebagai tipe data
     queryKey: ["events",],
     queryFn: fetchEvents,
@@ -88,7 +83,7 @@ export default function EventList() {
                   onClick={() => router.push("/main/event/" + event.id)}
                 >
                   <div className="w-[50px] h-[50px] rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
-                    <img
+                    <Image
                       src={event.images[0]?.imageUrl || "/placeholder.svg"}
                       alt={event.name}
                       className="w-full h-full object-cover"

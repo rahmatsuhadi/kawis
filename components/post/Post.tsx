@@ -2,7 +2,6 @@
 
 import PostCard from "./PostCard"
 import { useQuery } from "@tanstack/react-query";
-import { IPost } from "@/types";
 import { EventPost, EventPostImage, User } from "@prisma/client";
 
 export interface PostResponse extends EventPost {
@@ -45,9 +44,6 @@ export default function Post() {
   const {
     data,
     isLoading,
-    isError,
-    error,
-    refetch,
   } = useQuery<PostsApiResponse, Error>({ // Gunakan EventsApiResponse sebagai tipe data
     queryKey: ["posts",],
     queryFn: fetchPosts,

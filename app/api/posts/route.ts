@@ -86,11 +86,11 @@ export async function POST(req: Request) {
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
-    const status = searchParams.get("status"); // Bisa 'approved', 'pending'
+    // const status = searchParams.get("status"); // Bisa 'approved', 'pending'
     const limit = parseInt(searchParams.get("limit") || "10", 10);
     const offset = parseInt(searchParams.get("offset") || "0", 10);
 
-    let whereClause: any = {};
+    const whereClause = {};
 
     // Ambil event dari database
     const posts = await prisma.eventPost.findMany({

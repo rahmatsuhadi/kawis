@@ -5,21 +5,21 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import Map, { Marker, Source, Layer } from "react-map-gl/mapbox"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { MapPin, DotIcon as LocationDot } from "lucide-react"
+import { MapPin } from "lucide-react"
 import "mapbox-gl/dist/mapbox-gl.css"
 import { useQuery } from "@tanstack/react-query"
 import { EventsApiResponse, fetchEvents } from "../event/EventList"
 
-const sampleLocations = [
-  { id: 1, name: "Warung Padang Sederhana", type: "restaurant", lat: -6.2088, lng: 106.8456, icon: "🍽️" },
-  { id: 2, name: "Starbucks Coffee", type: "cafe", lat: -6.2095, lng: 106.8465, icon: "☕" },
-  { id: 3, name: "Mall Taman Anggrek", type: "shopping", lat: -6.207, lng: 106.844, icon: "🛍️" },
-  { id: 4, name: "Cafe Kopi Kenangan", type: "cafe", lat: -6.21, lng: 106.847, icon: "☕" },
-  { id: 5, name: "Restoran Sunda", type: "restaurant", lat: -6.2085, lng: 106.8445, icon: "🍽️" },
-  { id: 6, name: "Coworking Space", type: "workspace", lat: -6.2075, lng: 106.846, icon: "💼" },
-  { id: 7, name: "Pizza Hut", type: "restaurant", lat: -6.211, lng: 106.848, icon: "🍕" },
-  { id: 8, name: "Indomaret", type: "shopping", lat: -6.2065, lng: 106.8435, icon: "🛒" },
-]
+// const sampleLocations = [
+//   { id: 1, name: "Warung Padang Sederhana", type: "restaurant", lat: -6.2088, lng: 106.8456, icon: "🍽️" },
+//   { id: 2, name: "Starbucks Coffee", type: "cafe", lat: -6.2095, lng: 106.8465, icon: "☕" },
+//   { id: 3, name: "Mall Taman Anggrek", type: "shopping", lat: -6.207, lng: 106.844, icon: "🛍️" },
+//   { id: 4, name: "Cafe Kopi Kenangan", type: "cafe", lat: -6.21, lng: 106.847, icon: "☕" },
+//   { id: 5, name: "Restoran Sunda", type: "restaurant", lat: -6.2085, lng: 106.8445, icon: "🍽️" },
+//   { id: 6, name: "Coworking Space", type: "workspace", lat: -6.2075, lng: 106.846, icon: "💼" },
+//   { id: 7, name: "Pizza Hut", type: "restaurant", lat: -6.211, lng: 106.848, icon: "🍕" },
+//   { id: 8, name: "Indomaret", type: "shopping", lat: -6.2065, lng: 106.8435, icon: "🛒" },
+// ]
 
 function calculateDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
   const R = 6371
@@ -68,16 +68,12 @@ export default function LocationRadar() {
 
   const {
     data,
-    isLoading,
-    isError,
-    error,
-    refetch,
   } = useQuery<EventsApiResponse, Error>({ // Gunakan EventsApiResponse sebagai tipe data
     queryKey: ["events",],
     queryFn: fetchEvents,
     refetchOnWindowFocus: true,
   });
-  const events = data?.events || [];
+  const events = useMemo(() => data?.events || [],[]);
 
   const getCurrentLocation = () => {
     setIsLocating(true)
@@ -109,7 +105,7 @@ export default function LocationRadar() {
       const withinRadius = distance <= Number.parseFloat(radarRadius)
       return withinRadius
     })
-  }, [userLocation, radarRadius])
+  }, [userLocation, radarRadius, events])
 
   // Create radar circle GeoJSON
   const radarCircle = useMemo(() => {

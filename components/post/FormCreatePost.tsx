@@ -3,30 +3,23 @@
 import { useState } from "react"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Home, MapPin, Search, Calendar, MessageCircle, Upload, X } from "lucide-react"
+import {  Upload, X } from "lucide-react"
 import { toast } from "sonner"
 import { deleteImage, uploadImage } from "@/lib/image-service"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { Event } from "@prisma/client"
-import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 
 
 export default function FormCreatePost({ event }: { event: Event }) {
 
     const [postContent, setPostContent] = useState("")
-    const [uploadedImage, setUploadedImage] = useState<string | null>(null)
     const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null); // Hanya satu gambar per post
     const [isUploading, setIsUploading] = useState(false); // State untuk upload gambar
     const queryClient = useQueryClient();
-    const { data: session, status } = useSession();
     const router = useRouter()
 
 
@@ -93,10 +86,10 @@ export default function FormCreatePost({ event }: { event: Event }) {
             setUploadedImageUrl(imageUrl);
             toast.dismiss(uploadToastId);
             toast.success("Gambar berhasil diunggah!");
-        } catch (error: any) {
+        } catch (error) {
             toast.dismiss(uploadToastId);
             toast.error("Gagal Mengunggah Gambar", {
-                description: error.message || "Terjadi kesalahan saat mengunggah gambar.",
+                description: "Terjadi kesalahan saat mengunggah gambar.",
             });
             console.error("Upload Error:", error);
         } finally {
@@ -111,9 +104,9 @@ export default function FormCreatePost({ event }: { event: Event }) {
             await deleteImage(uploadedImageUrl); // Panggil fungsi delete dari service utility
             setUploadedImageUrl(null);
             toast.info("Gambar berhasil dihapus.");
-        } catch (error: any) {
+        } catch (error) {
             toast.error("Gagal Menghapus Gambar", {
-                description: error.message || "Terjadi kesalahan saat menghapus gambar.",
+                description: "Terjadi kesalahan saat menghapus gambar.",
             });
             console.error("Delete Error:", error);
         }
@@ -233,7 +226,7 @@ export default function FormCreatePost({ event }: { event: Event }) {
                             </div>
                             <div>
                                 <span className="font-medium">Image:</span>
-                                <p className="text-gray-600">{uploadedImage ? "1 gambar" : "Belum ada gambar"}</p>
+                                <p className="text-gray-600">{uploadedImageUrl ? "1 gambar" : "Belum ada gambar"}</p>
                             </div>
                         </div>
                     </CardContent>
@@ -242,7 +235,7 @@ export default function FormCreatePost({ event }: { event: Event }) {
                 {/* Post Button */}
                 <Button
                     onClick={handlePostNow}
-                    disabled={!postContent.trim() && !uploadedImage}
+                    disabled={!postContent.trim() && !uploadedImageUrl || isUploading}
                     className="w-full bg-orange-500 hover:bg-orange-600 text-white py-2 lg:py-3 text-base lg:text-lg disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     Post Now

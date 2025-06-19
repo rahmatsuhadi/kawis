@@ -43,7 +43,7 @@ export async function POST(req: Request) {
     });
 
     // Jangan kirim password kembali!
-    const { password: _, ...userWithoutPassword } = newUser;
+    const { password: _, ...userWithoutPassword } = newUser;  // eslint-disable-line @typescript-eslint/no-unused-vars
 
     return NextResponse.json(
       { message: "Registrasi berhasil!", user: userWithoutPassword },

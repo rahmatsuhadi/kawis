@@ -1,5 +1,5 @@
 "use client"
-import { signOut, useSession } from 'next-auth/react';
+import { signOut } from 'next-auth/react';
 import React, { useState } from 'react';
 import { Button } from '../ui/button';
 import { LogOut } from 'lucide-react';
