@@ -1,0 +1,144 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql" // Anda bisa ubah ini sesuai database Anda
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// Enum untuk mendefinisikan Role pengguna
+enum UserRole {
+  USER
+  ADMIN
+}
+
+
+model User {
+  id              String       @id @default(cuid()) // Note: NextAuth often defaults to cuid() or uuid()
+  fullName        String?      @unique @db.VarChar(255) // Username bisa nullable jika user hanya login via OAuth tanpa username
+  email           String       @unique @db.VarChar(255)
+  emailVerified   DateTime?    // Ditambahkan oleh adapter untuk verifikasi email
+  password        String?      @db.VarChar(255) // Password bisa nullable jika user hanya login via OAuth
+  role            UserRole     @default(USER)
+  image           String?      // Untuk URL gambar profil (dari OAuth atau kustom)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  // Relasi yang digunakan oleh PrismaAdapter:
+  accounts        Account[]    // Menghubungkan user dengan akun OAuth/credential mereka
+  sessions        Session[]    // Menghubungkan user dengan sesi mereka
+
+  // Relasi custom aplikasi Anda:
+  approvedEvents  Event[]
+  eventPosts      EventPost[]
+
+  @@map("users")
+}
+
+/// Model yang DIBUTUHKAN oleh NextAuth.js PrismaAdapter untuk akun OAuth/Credentials
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+/// Model yang DIBUTUHKAN oleh NextAuth.js PrismaAdapter untuk sesi
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+/// Model yang DIBUTUHKAN oleh NextAuth.js PrismaAdapter untuk token verifikasi (mis. magic link)
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+
+/// Model untuk Event
+model Event {
+  id              String       @id @default(uuid())
+  name            String       @db.VarChar(255)
+  description     String?      @db.Text
+  address         String       @db.VarChar(255)
+  startDate       DateTime
+  endDate         DateTime
+  latitude        Decimal      @db.Decimal(10, 8)
+  longitude       Decimal      @db.Decimal(11, 8)
+  anonymousName   String       @db.VarChar(255)
+  isApproved      Boolean      @default(false)
+  createdAt       DateTime     @default(now())
+  approvedBy      User?        @relation(fields: [approvedById], references: [id])
+  approvedById    String?
+
+  images          EventImage[] // Relasi One-to-Many ke EventImage
+  posts           EventPost[]
+
+  @@map("events")
+}
+
+/// Model untuk menyimpan informasi setiap gambar Event
+model EventImage {
+  id        String   @id @default(uuid())
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  imageUrl  String   @db.VarChar(2048) // URL dari gambar
+  createdAt DateTime @default(now())
+
+  @@map("event_images")
+}
+
+/// Model untuk Postingan Event
+model EventPost {
+  id              String    @id @default(uuid())
+  eventId         String
+  event           Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  content         String    @db.Text
+  postedByName    String    @db.VarChar(255)
+  createdAt       DateTime  @default(now())
+
+  images          EventPostImage[] // Relasi One-to-Many ke EventPostImage
+  userId          String?
+  user            User?     @relation(fields: [userId], references: [id])
+
+  @@map("event_posts")
+}
+
+/// Model untuk menyimpan informasi setiap gambar Postingan Event
+model EventPostImage {
+  id        String   @id @default(uuid())
+  eventPostId String
+  eventPost EventPost @relation(fields: [eventPostId], references: [id], onDelete: Cascade)
+  imageUrl  String   @db.VarChar(2048) // URL dari gambar
+  createdAt DateTime @default(now())
+
+  @@map("event_post_images")
+}

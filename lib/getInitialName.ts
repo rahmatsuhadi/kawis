@@ -1,0 +1,11 @@
+// initialName.js
+export default function getInitialName(fullName:string) {
+  if (!fullName || typeof fullName !== 'string') return '';
+
+  return fullName
+    .trim()
+    .split(/\s+/) // pisah berdasarkan spasi
+    .map(name => name[0]?.toUpperCase())
+    .join('');
+}
+
