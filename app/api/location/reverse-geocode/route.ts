@@ -36,6 +36,7 @@ export async function GET(request: Request) {
     );
 
     if (!response.ok) {
+      console.log(await response.json(), response)
       return NextResponse.json({ error: 'Failed to fetch address from OpenStreetMap' }, { status: 500 });
     }
 
