@@ -42,19 +42,22 @@ export const GeolocationProvider: React.FC<GeolocationProviderProps> = ({ childr
         `/api/location/reverse-geocode?lat=${latitude}&lon=${longitude}&format=json`
       );
       const data: ReverseGeocodeResponse = await response.json();
-      const address = data.address
-      setLocation((prev) => ({
-        ...prev,
-        address: `${address.village} ${address.municipality} ${address.country} ${address.state}`,  // Menggunakan display_name dari API response
-      }));
-      localStorage.setItem(
-        'location',
-        JSON.stringify({
-          latitude,
-          longitude,
-          address: `${address.village} ${address.municipality} ${address.country} ${address.state}`,
-        })
-      );
+      if (response.ok) {
+        const address = data.address
+        setLocation((prev) => ({
+          ...prev,
+          address: `${address.village} ${address.municipality} ${address.country} ${address.state}`,  // Menggunakan display_name dari API response
+        }));
+        localStorage.setItem(
+          'location',
+          JSON.stringify({
+            latitude,
+            longitude,
+            address: `${address.village} ${address.municipality} ${address.country} ${address.state}`,
+          })
+        );
+      }
+
     } catch (error) {
       setLocation((prev) => ({
         ...prev,
