@@ -7,6 +7,7 @@ export default function Maps() {
 
         <>
             <main className="flex-1 overflow-y-auto p-4">
+                
                 <LocationRadar />
             </main>
 

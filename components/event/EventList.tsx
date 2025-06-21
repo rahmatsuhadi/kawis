@@ -2,18 +2,27 @@
 import { Badge } from "@/components/ui/badge"
 import { Calendar } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { useQuery } from "@tanstack/react-query"
+import { QueryFunctionContext, useQuery } from "@tanstack/react-query"
 import { Event, EventImage } from "@prisma/client"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
+import { useGeolocation } from "@/context/geolocation-context"
 
 
-export async function fetchEvents(): Promise<EventsApiResponse> {
-  // const [_key, currentStatus, pageNum, limit] = queryKey;
-  // const offset = (Number(pageNum) - 1) * Number(limit);
+export async function fetchEvents(context: QueryFunctionContext): Promise<EventsApiResponse> {
+
+   const [_key, lat, lng, radius] = context.queryKey as [string, number?, number?, number?]
+
 
   // Perbaiki URL untuk menyertakan query parameters
-  const url = `/api/events`;
+  let url = `/api/events`;
+
+  url += `?lat=${lat}&lng=${lng}`;
+
+  // Radius opsional
+  if (radius !== null) {
+    url += `&radius=${radius}&sort=distance`;
+  }
 
   const response = await fetch(url);
   if (!response.ok) {
@@ -26,6 +35,7 @@ export async function fetchEvents(): Promise<EventsApiResponse> {
 
 export interface EventResponse extends Event {
   images: EventImage[]
+  distanceKm: number
 }
 
 
@@ -40,12 +50,16 @@ export default function EventList() {
 
   const router = useRouter()
 
+  const { location, radius } = useGeolocation()
+
 
   const {
     data,
     isLoading,
   } = useQuery<EventsApiResponse, Error>({ // Gunakan EventsApiResponse sebagai tipe data
-    queryKey: ["events",],
+    // queryKey: ["events",],
+    enabled: !!location,
+    queryKey: ["events", location?.latitude, location?.longitude, radius],
     queryFn: fetchEvents,
     refetchOnWindowFocus: true,
   });
@@ -86,6 +100,8 @@ export default function EventList() {
                     <Image
                       src={event.images[0]?.imageUrl || "/placeholder.svg"}
                       alt={event.name}
+                      width={100}
+                      height={100}
                       className="w-full h-full object-cover"
                     />
                   </div>
@@ -94,11 +110,12 @@ export default function EventList() {
                       {String(event.name).length > 50 ? String(event.name).substring(0, 50) + "..." : event.name}
                     </h3>
                     <p className="text-xs text-gray-500">{new Date(event.startDate).toDateString()}</p>
+                    <span className="text-xs text-gray-600 font-bold">{event.distanceKm.toFixed(2)} km</span>
                   </div>
                   <div className="h-full flex">
-                  <Badge variant="secondary" className="bg-orange-100 text-orange-700 mt-2  p-2">
-                    <Calendar className="w-3 h-3" />
-                  </Badge>
+                    <Badge variant="secondary" className="bg-orange-100 text-orange-700 mt-2  p-2">
+                      <Calendar className="w-3 h-3" />
+                    </Badge>
 
                   </div>
                 </div>

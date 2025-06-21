@@ -82,55 +82,106 @@ export async function POST(req: Request) {
   }
 }
 
+function calculateDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 6371; // Radius bumi dalam kilometer
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLng = ((lng2 - lng1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c; // Jarak dalam kilometer
+}
 
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
-    const status = searchParams.get("status"); // Bisa 'approved', 'pending'
+    const status = searchParams.get("status"); // 'approved', 'pending'
     const limit = parseInt(searchParams.get("limit") || "10", 10);
     const offset = parseInt(searchParams.get("offset") || "0", 10);
 
-     const whereClause: { isApproved?: boolean } = {};
+    // Get location parameters (using 'lat' and 'lng')
+    const userLatParam = searchParams.get("lat");
+    const userLngParam = searchParams.get("lng");
+    const radiusKmParam = searchParams.get("radius"); // Radius in KM
+
+    // Validate and parse required latitude and longitude
+    if (!userLatParam || !userLngParam) {
+      return NextResponse.json(
+        { message: "Latitude (lat) and longitude (lng) are required parameters for location-based search." },
+        { status: 400 }
+      );
+    }
+
+    const userLat = parseFloat(userLatParam);
+    const userLng = parseFloat(userLngParam);
+
+    // Parse optional radius, default to 5 KM
+    const radiusKm = radiusKmParam ? parseFloat(radiusKmParam) : 5;
+
+    // Validate parsed numeric parameters
+    if (isNaN(userLat) || isNaN(userLng) || isNaN(radiusKm) || radiusKm <= 0) {
+      return NextResponse.json(
+        { message: "Invalid latitude, longitude, or radius value. Must be valid numbers and radius > 0." },
+        { status: 400 }
+      );
+    }
+
+    const whereClause: { isApproved?: boolean } = {};
     const session = await getServerSession(authOptions);
 
-    // Logika filter berdasarkan status
+    // Filtering logic based on 'status'
     if (status === "pending") {
-      // Hanya admin yang bisa melihat event pending
+      // Only admins can view pending events
       if (!session || session.user?.role !== "ADMIN") {
         return NextResponse.json({ message: "Forbidden: Not authorized to view pending events" }, { status: 403 });
       }
       whereClause.isApproved = false;
     } else {
-      // Default: Hanya tampilkan event yang sudah disetujui (untuk semua user dan anonim)
+      // Default: Only show approved events (for all users and anonymous)
       whereClause.isApproved = true;
     }
 
-    // Ambil event dari database
-    const events = await prisma.event.findMany({
+    // Fetch all events that match the `isApproved` status first.
+    // Distance filtering and pagination will be applied in memory afterwards.
+    const allMatchingEvents = await prisma.event.findMany({
       where: whereClause,
-      take: limit,
-      skip: offset,
       orderBy: {
-        createdAt: "desc", // Urutkan dari yang terbaru
+        createdAt: "desc", // Order by most recent
       },
       include: {
-        images: true, // Sertakan semua gambar event
-        posts: false, // Tidak sertakan postingan di sini untuk list
-        approvedBy: { // Sertakan informasi admin yang menyetujui (opsional)
-          select: { email: true, fullName: true },
+        images: true, // Include all event images
+        approvedBy: { // Include information of the approving admin (optional)
+          select: { id: true, email: true, fullName: true },
         },
       },
     });
 
-    const totalEvents = await prisma.event.count({
-      where: whereClause,
+    // Calculate distance for each event and filter based on radius
+    const eventsWithDistance = allMatchingEvents.map(event => {
+      let distance = null;
+      // Only calculate distance if the event itself has valid coordinates
+      if (event.latitude !== null && event.longitude !== null) {
+        distance = calculateDistance(userLat, userLng, Number(event.latitude), Number(event.longitude));
+      }
+      return { ...event, distanceKm: distance }; // Add the distanceKm property
     });
 
-    return NextResponse.json({ events, total: totalEvents });
+    const filteredEventsByDistance = eventsWithDistance.filter(event => {
+      // Only include events that have a calculated distance and are within the specified radius
+      return event.distanceKm !== null && event.distanceKm <= radiusKm;
+    });
+
+    // Apply pagination (limit and offset) after distance filtering
+    const paginatedEvents = filteredEventsByDistance.slice(offset, offset + limit);
+    const totalFilteredEvents = filteredEventsByDistance.length; // Total count AFTER distance filtering
+
+    return NextResponse.json({ events: paginatedEvents, total: totalFilteredEvents });
+
   } catch (error) {
     console.error("Error listing events:", error);
     if (error instanceof Error) {
-      return NextResponse.json({ message: "Failed to list events", error: error.message }, { status: 500 });
+      return NextResponse.json({ message: `Failed to list events: ${error.message}` }, { status: 500 });
     }
     return NextResponse.json({ message: "Failed to list events" }, { status: 500 });
   } finally {

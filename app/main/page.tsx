@@ -3,7 +3,11 @@
 import EventList from "@/components/event/EventList"
 import Post from "@/components/post/Post"
 
+
+
 export default function Dashboard() {
+
+
 
     return (
         <>

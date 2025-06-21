@@ -113,6 +113,7 @@ export default function GeolocationMap({
     }
     setLocation(newLocation)
     if (onChange) {
+      debouncedOnChange(newLocation.lat, newLocation.lng)
       // Optional: hanya panggil onChange jika perlu
     }
     // Don't call onChange during drag to prevent performance issues

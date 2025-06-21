@@ -4,22 +4,25 @@ import React, { createContext, useState, useEffect, ReactNode } from 'react';
 
 // Mendefinisikan tipe untuk state geolocation
 interface LocationState {
-  latitude: number | null;
-  longitude: number | null;
-  error: string | null;
-  address: string
+  latitude: number;
+  longitude: number;
 }
 
 // Mendefinisikan tipe untuk context
 interface GeolocationContextType {
-  location: LocationState;
+  location: LocationState | null;
+  address: string;
+  radius: string;
+  setRadius: React.Dispatch<React.SetStateAction<string>>;
   getGeolocation: () => void;
+  updateLocation: (newLocation: LocationState) => void;
 }
 
 interface ReverseGeocodeResponse {
   display_name: string;
-  address: Address
+  address: Address;
 }
+
 // Membuat context untuk geolocation
 const GeolocationContext = createContext<GeolocationContextType | undefined>(undefined);
 
@@ -29,13 +32,12 @@ interface GeolocationProviderProps {
 }
 
 export const GeolocationProvider: React.FC<GeolocationProviderProps> = ({ children }) => {
-  const [location, setLocation] = useState<LocationState>({
-    latitude: null,
-    longitude: null,
-    error: null,
-    address: ""
-  });
 
+  const [address, setAddress] = useState<string>("");
+  const [location, setLocation] = useState<LocationState | null>(null);
+  const [radius, setRadius] = useState<string>("5")
+
+  // Fungsi untuk melakukan reverse geocoding
   const reverseGeocoding = async (latitude: number, longitude: number) => {
     try {
       const response = await fetch(
@@ -43,28 +45,31 @@ export const GeolocationProvider: React.FC<GeolocationProviderProps> = ({ childr
       );
       const data: ReverseGeocodeResponse = await response.json();
       if (response.ok) {
-        const address = data.address
-        setLocation((prev) => ({
-          ...prev,
-          address: `${address.village} ${address.municipality} ${address.country} ${address.state}`,  // Menggunakan display_name dari API response
-        }));
+
+        const display_name = data.display_name.split(",");
+
+        const formattedAddress = `${display_name[0]}, ${display_name[1]}, ${display_name[2]}, ${display_name[3]}`;
+
+        setAddress(formattedAddress);
         localStorage.setItem(
           'location',
           JSON.stringify({
             latitude,
             longitude,
-            address: `${address.village} ${address.municipality} ${address.country} ${address.state}`,
+            address: formattedAddress,
           })
         );
       }
-
     } catch (error) {
-      setLocation((prev) => ({
-        ...prev,
-        error: 'Error retrieving address',
-      }));
+      setAddress("");
     }
   };
+
+
+  const  updateLocation = async(newLocation: LocationState) => {
+    setLocation(newLocation);
+   await reverseGeocoding(newLocation.latitude, newLocation.longitude);
+  }
 
   // Fungsi untuk mendapatkan geolocation
   const getGeolocation = () => {
@@ -75,8 +80,6 @@ export const GeolocationProvider: React.FC<GeolocationProviderProps> = ({ childr
           setLocation({
             latitude: latitude,
             longitude: longitude,
-            error: null,
-            address: ""
           });
           localStorage.setItem(
             'location',
@@ -89,50 +92,36 @@ export const GeolocationProvider: React.FC<GeolocationProviderProps> = ({ childr
           reverseGeocoding(position.coords.latitude, position.coords.longitude);
         },
         (err) => {
-          setLocation({
-            latitude: null,
-            longitude: null,
-            error: err.message,
-            address: ""
-          });
+          setLocation(null);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 60000,
         }
       );
     } else {
-      setLocation({
-        latitude: null,
-        longitude: null,
-        error: 'Geolocation is not supported by this browser.',
-        address: ""
-      });
+      setLocation(null);
     }
   };
 
 
-  // Cek apakah ada data geolocation yang tersimpan di localStorage
+
   useEffect(() => {
     const savedLocation = localStorage.getItem('location');
-
     if (savedLocation) {
       const parsedLocation = JSON.parse(savedLocation);
+
       setLocation({
         latitude: parsedLocation.latitude,
-        longitude: parsedLocation.longitude,
-        error: null,
-        address: parsedLocation.address || "",
+        longitude: parsedLocation.longitude
       });
-
-      // Jika ada data lokasi, lakukan reverse geocoding
-      if (parsedLocation.latitude && parsedLocation.longitude) {
-        reverseGeocoding(parsedLocation.latitude, parsedLocation.longitude);
-      }
-    } else {
-      // Jika tidak ada data sebelumnya di localStorage, minta geolocation baru
-      getGeolocation();
+      setAddress(parsedLocation?.address || "");
     }
-  }, []);
+  }, [])
 
   return (
-    <GeolocationContext.Provider value={{ location, getGeolocation }}>
+    <GeolocationContext.Provider value={{ location,updateLocation, setRadius, radius, address, getGeolocation }}>
       {children}
     </GeolocationContext.Provider>
   );

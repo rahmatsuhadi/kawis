@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import {  MapPin, Clock, User, CalendarDays } from "lucide-react"
+import { MapPin, Clock, User, CalendarDays } from "lucide-react"
 import EventImageDetail from "@/components/event/CardEventImage"
 import { Metadata } from "next"
 import { Event, EventImage } from "@prisma/client"
@@ -13,6 +13,7 @@ import Link from "next/link"
 import { PostResponse } from "@/components/post/Post"
 import Image from "next/image"
 import { Decimal } from "@prisma/client/runtime/library"
+import RadarMaps from "@/components/event/RadarMap"
 
 interface EventDetailPageProps {
     params: Promise<{ id: string }>;
@@ -49,7 +50,7 @@ interface EventDetail extends Event {
 }
 
 // Simple Map Component for event location
-function EventLocationMap({  }: { location: { lat: number | Decimal; lng: number | Decimal; address: string } }) {
+function EventLocationMap({ }: { location: { lat: number | Decimal; lng: number | Decimal; address: string } }) {
     return (
         <div className="relative w-32 h-32">
             <div className="w-full h-full rounded-full border-4 border-orange-400 overflow-hidden relative bg-gradient-to-br from-teal-100 to-teal-200">
@@ -166,9 +167,17 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
                             <CardContent className="p-4 lg:p-6">
                                 <h3 className="text-base lg:text-lg font-semibold mb-4">Lokasi Event</h3>
                                 <div className="flex justify-center mb-4">
-                                    <div className="w-24 lg:w-32 h-24 lg:h-32">
+                                    <div className="w-24 lg:w-32 flex justify-center">
                                         {/* Menggunakan data latitude, longitude dari event */}
-                                        <EventLocationMap location={{ lat: event.latitude, lng: event.longitude, address: event.description || '' }} />
+                                        <RadarMaps
+                                            eventLocation={{
+                                                name: event.name,
+                                                latitude: Number(event.latitude),
+                                                longitude: Number(event.longitude),
+                                            }}
+                                            height={300}
+                                            width={300}
+                                        />
                                     </div>
                                 </div>
                                 <div className="text-center">

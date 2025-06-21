@@ -20,7 +20,7 @@ export default function Navigation() {
 
         < div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-2" >
             <div className="flex justify-around">
-                <Button variant={"ghost"} size="sm" className={`flex flex-col items-center p-2 ${isActive("/main") ? 'text-orange-500' : 'text-gray-500'} `}>
+                <Button asChild variant={"ghost"} size="sm" className={`flex flex-col items-center p-2 ${isActive("/main") ? 'text-orange-500' : 'text-gray-500'} `}>
                     <Link href="/main">
                         <Home className="w-5 h-5" />
                         <span className="text-xs mt-1">Home</span>
