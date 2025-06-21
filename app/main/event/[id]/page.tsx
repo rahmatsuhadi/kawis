@@ -12,7 +12,6 @@ import Link from "next/link"
 
 import { PostResponse } from "@/components/post/Post"
 import Image from "next/image"
-import { Decimal } from "@prisma/client/runtime/library"
 import RadarMaps from "@/components/event/RadarMap"
 
 interface EventDetailPageProps {
@@ -49,33 +48,6 @@ interface EventDetail extends Event {
     posts: PostResponse[]
 }
 
-// Simple Map Component for event location
-function EventLocationMap({ }: { location: { lat: number | Decimal; lng: number | Decimal; address: string } }) {
-    return (
-        <div className="relative w-32 h-32">
-            <div className="w-full h-full rounded-full border-4 border-orange-400 overflow-hidden relative bg-gradient-to-br from-teal-100 to-teal-200">
-                {/* Map background pattern */}
-                <div className="absolute inset-0 opacity-30">
-                    <svg width="100%" height="100%" className="absolute inset-0">
-                        <line x1="0" y1="50%" x2="100%" y2="50%" stroke="white" strokeWidth="2" />
-                        <line x1="50%" y1="0" x2="50%" y2="100%" stroke="white" strokeWidth="2" />
-                        <line x1="0" y1="25%" x2="100%" y2="25%" stroke="white" strokeWidth="1" />
-                        <line x1="0" y1="75%" x2="100%" y2="75%" stroke="white" strokeWidth="1" />
-                        <line x1="25%" y1="0" x2="25%" y2="100%" stroke="white" strokeWidth="1" />
-                        <line x1="75%" y1="0" x2="75%" y2="100%" stroke="white" strokeWidth="1" />
-                    </svg>
-                </div>
-
-                {/* Location marker */}
-                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
-                    <div className="w-4 h-4 bg-orange-500 rounded-full border-2 border-white shadow-lg flex items-center justify-center">
-                        <div className="w-1 h-1 bg-white rounded-full"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    )
-}
 
 
 export default async function EventDetailPage({ params }: EventDetailPageProps) {

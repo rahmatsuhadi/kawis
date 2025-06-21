@@ -1,18 +1,15 @@
 "use client"
 
-import { useState, useEffect, useMemo, useRef } from "react"
+import React, { useState, useMemo } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import Map, { Marker, Source, Layer } from "react-map-gl/mapbox"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Eye, HelpCircle, Info, MapPin, Navigation, Target, Zap } from "lucide-react"
+import {  Info, MapPin, Navigation, Target } from "lucide-react"
 import "mapbox-gl/dist/mapbox-gl.css"
 import { useQuery } from "@tanstack/react-query"
 import { EventsApiResponse, fetchEvents } from "../event/EventList"
 import { useGeolocation } from "@/context/geolocation-context"
-import { Badge } from "../ui/badge"
 import { Separator } from "../ui/separator"
-
 
 function calculateDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
   const R = 6371
@@ -89,8 +86,8 @@ export default function LocationRadar() {
     if (!userLocation) return null
     return createCircle([userLocation.longitude, userLocation.latitude], Number.parseFloat(radarRadius))
   }, [userLocation, radarRadius])
-
-  const mapRef = useRef<any>(null)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const mapRef = React.useRef<any>(null) 
   const [isRecentering, setIsRecentering] = useState(false)
 
   // Function to recenter map to user location

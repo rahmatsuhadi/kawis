@@ -16,7 +16,7 @@ export default function Header() {
   const { data } = useSession()
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false)
 
-  const { location, address, setRadius,radius } = useGeolocation()
+  const {  address, setRadius,radius } = useGeolocation()
   const router = useRouter()
 
   const handleLocationClick = () => {

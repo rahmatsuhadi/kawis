@@ -117,6 +117,7 @@ export default function GeolocationMap({
       // Optional: hanya panggil onChange jika perlu
     }
     // Don't call onChange during drag to prevent performance issues
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   }, [onChange])
 
   // Handle drag end - call onChange only when drag is complete

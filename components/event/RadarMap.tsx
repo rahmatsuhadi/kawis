@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useMemo } from "react"
-import Map, { Layer, Marker, Source } from "react-map-gl/mapbox"
+import Map, {  Marker } from "react-map-gl/mapbox"
 import { MapPin, Calendar } from "lucide-react"
 import "mapbox-gl/dist/mapbox-gl.css"
 import { useGeolocation } from "@/context/geolocation-context"
@@ -23,6 +23,7 @@ interface RadarMapsProps {
   showRoute?:boolean,
   width?: number
   height?: number
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onEventClick?: (event: any) => void
   onCurrentLocationClick?: () => void
   className?: string
@@ -40,21 +41,21 @@ function calculateDistance(lat1: number, lng1: number, lat2: number, lng2: numbe
 }
 
 // Function to create route line GeoJSON
-function createRouteLine(start: [number, number], end: [number, number]) {
-  return {
-    type: "FeatureCollection" as const,
-    features: [
-      {
-        type: "Feature" as const,
-        geometry: {
-          type: "LineString" as const,
-          coordinates: [start, end],
-        },
-        properties: {},
-      },
-    ],
-  }
-}
+// function createRouteLine(start: [number, number], end: [number, number]) {
+//   return {
+//     type: "FeatureCollection" as const,
+//     features: [
+//       {
+//         type: "Feature" as const,
+//         geometry: {
+//           type: "LineString" as const,
+//           coordinates: [start, end],
+//         },
+//         properties: {},
+//       },
+//     ],
+//   }
+// }
 
 
 export default function RadarMaps({
@@ -63,7 +64,6 @@ export default function RadarMaps({
   width = 500,
   height = 500,
   onEventClick,
-  showRoute = true,
   onCurrentLocationClick,
   className = "",
 }: RadarMapsProps) {

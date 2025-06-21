@@ -17,7 +17,7 @@ interface LocationModalProps {
 }
 
 export default function LocationModal({ isOpen, onClose }: LocationModalProps) {
-  const { location, address, getGeolocation, updateLocation } = useGeolocation()
+  const { location, updateLocation } = useGeolocation()
 
   const [tempLocation, setTempLocation] = useState<{ lat: number; lng: number } | null>(
     location ? { lat: location.latitude, lng: location.longitude } : null
@@ -41,8 +41,9 @@ export default function LocationModal({ isOpen, onClose }: LocationModalProps) {
         },
         (error) => {
           // Default to Jakarta if geolocation fails
+          console.log(error.message)
           const defaultLocation = { lat: -6.2088, lng: 106.8456 }
-          toast.error("Gagal dalam mengambil lokasi saat ini.")
+          toast.error("Gagal dalam mengambil lokasi saat ini. ")
           setTempLocation(defaultLocation)
           setIsLoading(false)
         },
@@ -62,7 +63,7 @@ export default function LocationModal({ isOpen, onClose }: LocationModalProps) {
   }, [])
 
   // Handle marker drag
-  const handleMarkerDrag = useCallback((event: any) => {
+  const handleMarkerDrag = useCallback((event: {lngLat: {lat: number, lng: number}}) => {
     const newLocation = {
       lat: event.lngLat.lat,
       lng: event.lngLat.lng,
@@ -71,7 +72,7 @@ export default function LocationModal({ isOpen, onClose }: LocationModalProps) {
   }, [])
 
   // Handle marker drag end
-  const handleMarkerDragEnd = useCallback((event: any) => {
+  const handleMarkerDragEnd = useCallback((event:  {lngLat: {lat: number, lng: number}}) => {
     setIsDragging(false)
     const newLocation = {
       lat: event.lngLat.lat,
@@ -192,7 +193,7 @@ export default function LocationModal({ isOpen, onClose }: LocationModalProps) {
               <div className="w-full h-full flex items-center justify-center bg-gray-100">
                 <div className="text-center">
                   <MapPin className="h-12 w-12 text-gray-400 mx-auto mb-2" />
-                  <p className="text-gray-500">Klik "Gunakan GPS" untuk menampilkan peta</p>
+                  <p className="text-gray-500">{`Klik "Gunakan GPS" untuk menampilkan peta`}</p>
                 </div>
               </div>
             )}
@@ -223,7 +224,7 @@ export default function LocationModal({ isOpen, onClose }: LocationModalProps) {
               </div>
 
               <div className="text-sm text-gray-600">
-                <p>💡 <strong>Tips:</strong> Drag marker untuk mengubah lokasi, atau klik "Gunakan GPS" untuk lokasi otomatis</p>
+                <p>💡 <strong>Tips:</strong> {`Drag marker untuk mengubah lokasi, atau klik "Gunakan GPS" untuk lokasi otomatis`}</p>
               </div>
             </div>
           )}
