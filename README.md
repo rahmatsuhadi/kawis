@@ -37,8 +37,8 @@ A full-stack event management platform where users can view, search, and explore
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/rahmatsuhadi/event-management-app.git
-cd event-management-app
+git clone https://github.com/rahmatsuhadi/kawis.git
+cd kawis
 ```
 
 ### 2. Install Dependencies
@@ -77,7 +77,7 @@ npx prisma generate
 ### 5. Run Development Server
 
 ```bash
-npm run dev
+pnpm run dev
 ```
 
 The application will be available at:  
