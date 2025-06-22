@@ -10,7 +10,7 @@ import { usePathname } from "next/navigation";
 export default function Navigation() {
     // const router = useRouter();
     const pathname = usePathname(); // Hook untuk mendapatkan path URL saat ini
-    const { data: session, status } = useSession(); // Dapatkan sesi user
+    const { data: session } = useSession(); // Dapatkan sesi user
 
     // Helper untuk menentukan apakah link aktif
     const isActive = (path: string) => pathname === path;
