@@ -47,12 +47,11 @@ export default function Post() {
   } = useQuery<PostsApiResponse, Error>({ // Gunakan EventsApiResponse sebagai tipe data
     queryKey: ["posts",],
     queryFn: fetchPosts,
-    refetchOnWindowFocus: true,
   });
   const posts = data?.posts || [];
 
   return (
-    <div className="space-y-4 lg:space-y-6 overflow-y-auto max-w-2xl mx-auto">
+    <div className="space-y-4 lg:space-y-6 overflow-y-auto max-w-2xl mx-auto mb-20">
       {isLoading
         ? Array.from({ length: 4 }).map((_, i) => <PostCardSkeleton key={i} />)
         : posts?.map((post) => <PostCard key={post.id} post={post} />)}

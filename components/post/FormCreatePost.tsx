@@ -3,15 +3,15 @@
 import { useState } from "react"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
-import {  Upload, X } from "lucide-react"
+import { Upload, X } from "lucide-react"
 import { toast } from "sonner"
 import { deleteImage, uploadImage } from "@/lib/image-service"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { Event } from "@prisma/client"
 import { useRouter } from "next/navigation"
+import Editor from "../ui/rich-text/Editor"
 
 
 export default function FormCreatePost({ event }: { event: Event }) {
@@ -114,28 +114,28 @@ export default function FormCreatePost({ event }: { event: Event }) {
 
 
     const handlePostNow = () => {
-    // Validasi dasar
-    if (!event.id) { // Pastikan ID event yang akan dikirim itu ada
-      toast.error("Pilih Event", { description: "Event terkait tidak ditemukan." });
-      return;
-    }
-    if (!postContent.trim() && !uploadedImageUrl) {
-      toast.error("Konten Kosong", { description: "Postingan harus memiliki konten atau gambar." });
-      return;
-    }
+        // Validasi dasar
+        if (!event.id) { // Pastikan ID event yang akan dikirim itu ada
+            toast.error("Pilih Event", { description: "Event terkait tidak ditemukan." });
+            return;
+        }
+        if (!postContent.trim() && !uploadedImageUrl) {
+            toast.error("Konten Kosong", { description: "Postingan harus memiliki konten atau gambar." });
+            return;
+        }
 
-    const postData = {
-      eventId: event.id, // Gunakan ID event yang sudah valid
-      content: postContent,
-      imageUrl: uploadedImageUrl,
+        const postData = {
+            eventId: event.id, // Gunakan ID event yang sudah valid
+            content: postContent,
+            imageUrl: uploadedImageUrl,
+        };
+
+        createPostMutation.mutate(postData);
     };
 
-    createPostMutation.mutate(postData);
-  };
 
-
-
-
+ const plainTextContent = postContent.replace(/<[^>]*>/g, '');
+    const finalRenderedContent = { __html: plainTextContent };
     const selectedEventName = event.name
     return (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
@@ -146,7 +146,7 @@ export default function FormCreatePost({ event }: { event: Event }) {
                     <div className="relative">
                         <Card className="overflow-hidden">
                             <Image
-                                src={uploadedImageUrl || "/placeholder.svg"}
+                                src={uploadedImageUrl || "/placeholder.jpg"}
                                 alt="Uploaded image"
                                 width={600}
                                 height={400}
@@ -202,13 +202,14 @@ export default function FormCreatePost({ event }: { event: Event }) {
                     <Label htmlFor="content" className="text-sm lg:text-base font-medium">
                         Konten
                     </Label>
-                    <Textarea
+                    <Editor placeholder="Apa yang ada pikirkan?" content={postContent} onChange={(e) => setPostContent(e)} />
+                    {/* <Textarea
                         id="content"
                         placeholder="Apa yang ada pikirkan?"
                         value={postContent}
                         onChange={(e) => setPostContent(e.target.value)}
                         className="min-h-32 lg:min-h-40 border-orange-200 focus:border-orange-500 resize-none"
-                    />
+                    /> */}
                 </div>
 
                 {/* Post Preview */}
@@ -222,7 +223,9 @@ export default function FormCreatePost({ event }: { event: Event }) {
                             </div>
                             <div>
                                 <span className="font-medium">Content:</span>
-                                <p className="text-gray-600">{postContent || "Belum diisi"}</p>
+                                <div className="text-gray-60 prose dark:prose-invert max-w-none" // Tambahkan kelas 'prose' untuk styling default HTML (jika Anda pakai Tailwind Typography)
+                                    dangerouslySetInnerHTML={finalRenderedContent}
+                                ></div>
                             </div>
                             <div>
                                 <span className="font-medium">Image:</span>

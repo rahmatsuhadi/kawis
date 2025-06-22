@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { Calendar, Home, MapPin, MessageCircle, Search } from "lucide-react"
+import { Calendar, Home, MapPin, Search, User2 } from "lucide-react"
 
 import Link from "next/link"
 import { usePathname } from "next/navigation";
@@ -38,9 +38,12 @@ export default function Navigation() {
                         <span className="text-xs mt-1">Maps</span>
                     </Link>
                 </Button>
-                <Button variant="ghost" size="sm" className="flex flex-col items-center p-2 text-gray-500">
-                    <Search className="w-5 h-5" />
+                <Button asChild variant="ghost" size="sm"  className={`flex flex-col items-center p-2 ${isActive("/main/explore") ? 'text-orange-500' : 'text-gray-500'} `}>
+                     <Link href="/main/explore">
+                       <Search className="w-5 h-5" />
                     <span className="text-xs mt-1">Explore</span>
+                    </Link>
+                    
                 </Button>
                 <Button
                     className={`flex flex-col items-center p-2 ${isActive("/main/event-create") ? 'text-orange-500' : 'text-gray-500'} `}
@@ -54,7 +57,7 @@ export default function Navigation() {
                         <span className="text-xs mt-1"> Add Event</span>
                     </Link>
                 </Button>
-                <Button
+                {/* <Button
                     variant="ghost"
                     size="sm"
                     className="flex flex-col items-center p-2 text-gray-500"
@@ -62,6 +65,15 @@ export default function Navigation() {
                 >
                     <MessageCircle className="w-5 h-5" />
                     <span className="text-xs mt-1">Message</span>
+                </Button> */}
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    className="flex flex-col items-center p-2 text-gray-500"
+                    onClick={() => console.log("messaging")}
+                >
+                    <User2 className="w-5 h-5" />
+                    <span className="text-xs mt-1">Profile</span>
                 </Button>
             </div>
         </div >

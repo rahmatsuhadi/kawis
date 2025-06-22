@@ -22,7 +22,7 @@ export default function EventImageDetail({ images }: { images: EventImage[] }) {
                                 {/* Pembungkus relative dengan tinggi yang jelas agar Image fill */}
                                 <div className="relative w-full h-60 lg:h-80">
                                     <Image
-                                        src={item.imageUrl || "/placeholder.svg"}
+                                        src={item.imageUrl || "/placeholder.jpg"}
                                         alt="Event Main Poster"
                                         layout="fill" // Gambar akan mengisi parent-nya
                                         objectFit="cover" // Gambar akan menutupi area tanpa distorsi

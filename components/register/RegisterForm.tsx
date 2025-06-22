@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 export default function RegisterForm() {
   const [fullName, setFullName] = useState(""); // State untuk Full Name
   const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -28,7 +29,7 @@ export default function RegisterForm() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ fullName, email, password }), // Kirim fullName juga
+        body: JSON.stringify({ fullName, email, password, username }), // Kirim fullName juga
       });
 
       const data = await response.json();
@@ -71,6 +72,21 @@ export default function RegisterForm() {
             placeholder="Full Name"
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
+            required
+            disabled={isSubmitting}
+            className="w-full h-10 lg:h-12 px-4 border border-gray-300 rounded-md bg-white"
+          />
+        </div>
+        <div>
+          <Label htmlFor="username" className="sr-only">
+            Username
+          </Label>
+          <Input
+            id="username"
+            type="text"
+            placeholder="Username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
             required
             disabled={isSubmitting}
             className="w-full h-10 lg:h-12 px-4 border border-gray-300 rounded-md bg-white"

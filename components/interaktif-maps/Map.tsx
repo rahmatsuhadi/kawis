@@ -100,7 +100,7 @@ export default function LocationRadar() {
         zoom: 13,
         duration: 1500,
         essential: true,
-      })
+      })      
 
       // Reset button state after animation
       setTimeout(() => {

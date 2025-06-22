@@ -43,6 +43,15 @@ export async function GET(req: Request, { params }: EventDetailParams) {
         approvedBy: { // Sertakan informasi admin yang menyetujui event
           select: { id: true, fullName: true, email: true },
         },
+        eventCategories: { // <-- Sertakan kategori dalam respons
+          include: { category: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+            }
+          } }, // Sertakan detail kategori dari tabel Category
+        },
       },
     });
 

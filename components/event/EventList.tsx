@@ -7,21 +7,22 @@ import { Event, EventImage } from "@prisma/client"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
 import { useGeolocation } from "@/context/geolocation-context"
+import NearbyEventsCard from "./NearbyEvent"
 
 
 export async function fetchEvents(context: QueryFunctionContext): Promise<EventsApiResponse> {
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-   const [_key, lat, lng, radius] = context.queryKey as [string, number?, number?, number?]
-  
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_key, lat, lng, radius] = context.queryKey as [string, number?, number?, number?]
 
+  console.log(radius)
   // Perbaiki URL untuk menyertakan query parameters
   let url = `/api/events`;
 
-  url += `?lat=${lat}&lng=${lng}`;
+  url += `?lat=${lat}&lng=${lng}&sort=distance`;
 
   // Radius opsional
-  if (radius !== null) {
-    url += `&radius=${radius}&sort=distance`;
+  if (!!radius) {
+    url += `&radius=${radius}&`;
   }
 
   const response = await fetch(url);
@@ -65,9 +66,22 @@ export default function EventList() {
   });
   const events = data?.events || [];
 
+  return (
+    <aside className="hidden xl:block w-[450px] bg-white border-l border-gray-200 p-6  ">
+    <NearbyEventsCard
+      maxEvents={3}
+    events={events}
+    
+    title="Event Terdekat"
+    showViewAll={true}
+    onViewAll={() => console.log("View all clicked")}
+    />
+    </aside>
+  )
+
 
   return (
-    <aside className="hidden xl:block w-[400px] bg-white border-l border-gray-200 p-6  ">
+    <aside className="hidden xl:block w-[450px] bg-white border-l border-gray-200 p-6  ">
       <div className="space-y-6">
         <div>
           <h2 className="text-xl font-bold mb-4">Event Terdekat</h2>
@@ -98,7 +112,7 @@ export default function EventList() {
                 >
                   <div className="w-[50px] h-[50px] rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
                     <Image
-                      src={event.images[0]?.imageUrl || "/placeholder.svg"}
+                      src={event.images[0]?.imageUrl || "/placeholder.jpg"}
                       alt={event.name}
                       width={100}
                       height={100}

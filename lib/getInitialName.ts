@@ -1,5 +1,5 @@
 // initialName.js
-export default function getInitialName(fullName:string) {
+export default function getInitialName(fullName:string | null) {
   if (!fullName || typeof fullName !== 'string') return '';
 
   return fullName

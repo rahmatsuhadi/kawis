@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth"; // Untuk memeriksa sesi user
 import { PrismaClient } from "@prisma/client";
 import { authOptions } from "@/auth";
+import { calculateDistance } from "@/lib/calculate-distance";
 
 const prisma = new PrismaClient();
 
@@ -26,23 +27,39 @@ export async function POST(req: Request) {
       anonymousName, // Meskipun event dibuat user login, bisa jadi ada field ini untuk anonim
       // Misalnya, jika event dibuat oleh user tapi ingin ditampilkan seperti anonim
       // Atau, kita bisa hilangkan ini jika event yang dibuat user login selalu menggunakan nama user tersebut
-      imageUrls // Array of image URLs for the event
+      imageUrls, // Array of image URLs for the event
+      categoryIds //Array of category IDs 
     } = await req.json();
 
-    // 3. Validasi input
-    if (!name || !startDate || !endDate || latitude === undefined || longitude === undefined) {
-      return NextResponse.json({ message: "Missing required fields" }, { status: 400 });
+    // Validasi input
+    if (!name || !startDate || !endDate || latitude === undefined || longitude === undefined || !imageUrls || imageUrls.length === 0 || !categoryIds || !Array.isArray(categoryIds) || categoryIds.length === 0) {
+      return NextResponse.json({ message: "Missing required fields or images/categories." }, { status: 400 });
     }
+
+
 
     // Pastikan tanggal valid
     if (new Date(startDate) >= new Date(endDate)) {
       return NextResponse.json({ message: "End date must be after start date" }, { status: 400 });
     }
 
+    // Verifikasi kategori IDs
+    const existingCategories = await prisma.category.findMany({
+      where: { id: { in: categoryIds } },
+      select: { id: true },
+    });
+    if (existingCategories.length !== categoryIds.length) {
+      return NextResponse.json({ message: "One or more provided category IDs are invalid." }, { status: 400 });
+    }
+
+    const slug = name.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, ''); // Buat slug dari nama
+
+
     // 4. Buat Event di Database
     const newEvent = await prisma.event.create({
       data: {
         name,
+        slug: slug,
         address,
         description,
         startDate: new Date(startDate),
@@ -60,15 +77,30 @@ export async function POST(req: Request) {
         images: {
           create: imageUrls ? imageUrls.map((url: string) => ({ imageUrl: url })) : [],
         },
+
+        eventCategories: {
+          create: categoryIds.map((categoryId: string) => ({
+            categoryId: categoryId,
+          })),
+        },
       },
       include: {
+        eventCategories: { // Sertakan kategori dalam respons
+          include: { category: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+            }
+          } }, // Sertakan detail kategori
+        },
         images: true, // Sertakan data gambar yang baru dibuat dalam respons
       },
     });
 
     // 5. Kirim respons sukses
     return NextResponse.json(
-      { message: "Event created successfully and awaiting admin approval", event: newEvent },
+      { message: !!session ?  "Event created successfully!" : "Event created successfully and awaiting admin approval" , event: newEvent },
       { status: 201 }
     );
   } catch (error) {
@@ -82,16 +114,7 @@ export async function POST(req: Request) {
   }
 }
 
-function calculateDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
-  const R = 6371; // Radius bumi dalam kilometer
-  const dLat = ((lat2 - lat1) * Math.PI) / 180;
-  const dLng = ((lng2 - lng1) * Math.PI) / 180;
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c; // Jarak dalam kilometer
-}
+
 
 export async function GET(req: Request) {
   try {
@@ -100,83 +123,102 @@ export async function GET(req: Request) {
     const limit = parseInt(searchParams.get("limit") || "10", 10);
     const offset = parseInt(searchParams.get("offset") || "0", 10);
 
-    // Get location parameters (using 'lat' and 'lng')
+    // Get location parameters
     const userLatParam = searchParams.get("lat");
     const userLngParam = searchParams.get("lng");
-    const radiusKmParam = searchParams.get("radius"); // Radius in KM
+    const radiusKmParam = searchParams.get("radius"); // Radius in KM (now truly optional)
 
-    // Validate and parse required latitude and longitude
-    if (!userLatParam || !userLngParam) {
-      return NextResponse.json(
-        { message: "Latitude (lat) and longitude (lng) are required parameters for location-based search." },
-        { status: 400 }
-      );
+    // Validate and parse required latitude and longitude if provided for filtering
+    const hasLocationParams = userLatParam && userLngParam;
+    let userLat: number | null = null;
+    let userLng: number | null = null;
+    let radiusKm: number | null = null; // Can be null if not provided
+
+    if (hasLocationParams) {
+        userLat = parseFloat(userLatParam);
+        userLng = parseFloat(userLngParam);
+        radiusKm = radiusKmParam ? parseFloat(radiusKmParam) : null; // If radius is not provided, it's null
+
+        if (isNaN(userLat) || isNaN(userLng) || (radiusKm !== null && (isNaN(radiusKm) || radiusKm <= 0))) {
+            return NextResponse.json(
+                { message: "Invalid latitude, longitude, or radius value." },
+                { status: 400 }
+            );
+        }
     }
 
-    const userLat = parseFloat(userLatParam);
-    const userLng = parseFloat(userLngParam);
-
-    // Parse optional radius, default to 5 KM
-    const radiusKm = radiusKmParam ? parseFloat(radiusKmParam) : 5;
-
-    // Validate parsed numeric parameters
-    if (isNaN(userLat) || isNaN(userLng) || isNaN(radiusKm) || radiusKm <= 0) {
-      return NextResponse.json(
-        { message: "Invalid latitude, longitude, or radius value. Must be valid numbers and radius > 0." },
-        { status: 400 }
-      );
-    }
 
     const whereClause: { isApproved?: boolean } = {};
     const session = await getServerSession(authOptions);
 
     // Filtering logic based on 'status'
     if (status === "pending") {
-      // Only admins can view pending events
       if (!session || session.user?.role !== "ADMIN") {
         return NextResponse.json({ message: "Forbidden: Not authorized to view pending events" }, { status: 403 });
       }
       whereClause.isApproved = false;
     } else {
-      // Default: Only show approved events (for all users and anonymous)
-      whereClause.isApproved = true;
+      whereClause.isApproved = true; // Default: Only show approved events
     }
 
-    // Fetch all events that match the `isApproved` status first.
-    // Distance filtering and pagination will be applied in memory afterwards.
+    // Fetch all events that match the `isApproved` status.
     const allMatchingEvents = await prisma.event.findMany({
       where: whereClause,
       orderBy: {
-        createdAt: "desc", // Order by most recent
+        createdAt: "desc",
       },
       include: {
-        images: true, // Include all event images
-        approvedBy: { // Include information of the approving admin (optional)
-          select: { id: true, email: true, fullName: true },
-        },
+        images: true,
+        approvedBy: { select: { id: true, email: true, fullName: true, username: true } },
+        eventCategories: { include: { category: { select: { id: true, name: true, slug: true } } } },
       },
     });
 
-    // Calculate distance for each event and filter based on radius
-    const eventsWithDistance = allMatchingEvents.map(event => {
-      let distance = null;
-      // Only calculate distance if the event itself has valid coordinates
-      if (event.latitude !== null && event.longitude !== null) {
-        distance = calculateDistance(userLat, userLng, Number(event.latitude), Number(event.longitude));
-      }
-      return { ...event, distanceKm: distance }; // Add the distanceKm property
-    });
+    let finalEvents = allMatchingEvents;
 
-    const filteredEventsByDistance = eventsWithDistance.filter(event => {
-      // Only include events that have a calculated distance and are within the specified radius
-      return event.distanceKm !== null && event.distanceKm <= radiusKm;
-    });
+    // Apply distance filtering ONLY IF all location parameters (lat, lng, and valid radius) are provided
+    if (userLat !== null && userLng !== null && radiusKm !== null) {
+      const eventsWithDistance = allMatchingEvents.map(event => {
+        let distance = null;
+        if (event.latitude !== null && event.longitude !== null) {
+          distance = calculateDistance(userLat, userLng, Number(event.latitude), Number(event.longitude));
+        }
+        return { ...event, distanceKm: distance };
+      });
 
-    // Apply pagination (limit and offset) after distance filtering
-    const paginatedEvents = filteredEventsByDistance.slice(offset, offset + limit);
-    const totalFilteredEvents = filteredEventsByDistance.length; // Total count AFTER distance filtering
+      finalEvents = eventsWithDistance.filter(event => {
+        return event.distanceKm !== null && event.distanceKm <= radiusKm;
+      });
+    } else {
+        // If no full location params, but lat/lng were passed, still calculate and return distance
+        // but don't filter by radius.
+        if (userLat !== null && userLng !== null) {
+             finalEvents = allMatchingEvents.map(event => {
+                let distance = null;
+                if (event.latitude !== null && event.longitude !== null) {
+                  distance = calculateDistance(userLat, userLng, Number(event.latitude), Number(event.longitude));
+                }
+                return { ...event, distanceKm: distance }; // Add distanceKm even if not filtering
+            });
+        } else {
+            // If no lat/lng at all, distanceKm will be null for all events
+            finalEvents = allMatchingEvents.map(event => ({ ...event, distanceKm: null }));
+        }
+    }
+    
+    // Total count AFTER potential distance filtering
+    const totalFilteredEvents = finalEvents.length; 
 
-    return NextResponse.json({ events: paginatedEvents, total: totalFilteredEvents });
+    // Apply pagination (limit and offset) after all other filtering
+    const paginatedEvents = finalEvents.slice(offset, offset + limit);
+
+    // Map categories into the event object for easier frontend consumption
+    const eventsForResponse = paginatedEvents.map(event => ({
+        ...event,
+        categories: event.eventCategories.map(ec => ec.category)
+    }));
+
+    return NextResponse.json({ events: eventsForResponse, total: totalFilteredEvents });
 
   } catch (error) {
     console.error("Error listing events:", error);

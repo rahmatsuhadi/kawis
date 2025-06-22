@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Home, MapPin, Search, Calendar, MessageCircle, Shield, Users } from "lucide-react";
+import { Home, MapPin, Search, Calendar, Shield, Users } from "lucide-react";
 import Link from "next/link"; // Import Link dari Next.js
 import { usePathname } from "next/navigation"; // Import usePathname untuk menandai link aktif
 import { useSession } from "next-auth/react"; // Import useSession untuk akses sesi
@@ -17,7 +17,7 @@ export default function Sidebar() {
   const isAdmin = status === "authenticated" && session?.user?.role === "ADMIN";
 
   return (
-    <aside className="hidden lg:block max-w-64 bg-white border-r border-gray-200 h-screen overflow-y-auto">
+    <aside className="hidden lg:block max-w-80 bg-white border-r border-gray-200 h-screen overflow-y-auto">
       <nav className="p-4 space-y-2">
         {/* Home */}
         <Button
@@ -46,10 +46,10 @@ export default function Sidebar() {
         {/* Explore */}
         <Button
           asChild
-          variant={isActive("/explore") ? "default" : "ghost"}
-          className={`w-full justify-start ${isActive("/explore") ? "bg-orange-500 hover:bg-orange-600 text-white" : "text-orange-500 hover:text-orange-600 hover:bg-orange-50"}`}
+          variant={isActive("/main/explore") ? "default" : "ghost"}
+          className={`w-full justify-start ${isActive("/main/explore") ? "bg-orange-500 hover:bg-orange-600 text-white" : "text-orange-500 hover:text-orange-600 hover:bg-orange-50"}`}
         >
-          <Link href="/explore">
+          <Link href="/main/explore">
             <Search className="w-5 h-5 mr-3" />
             Explore
           </Link>
@@ -68,7 +68,7 @@ export default function Sidebar() {
         </Button>
 
         {/* Create Post */}
-        <Button
+        {/* <Button
           asChild
           variant={isActive("/posts/create") ? "default" : "ghost"} // Asumsi halaman create post adalah /posts/create
           className={`w-full justify-start ${isActive("/posts/create") ? "bg-orange-500 hover:bg-orange-600 text-white" : "text-orange-500 hover:text-orange-600 hover:bg-orange-50"}`}
@@ -77,10 +77,10 @@ export default function Sidebar() {
             <MessageCircle className="w-5 h-5 mr-3" />
             Create Post
           </Link>
-        </Button>
+        </Button> */}
 
         {/* Message */}
-        <Button
+        {/* <Button
           asChild
           variant={isActive("/messages") ? "default" : "ghost"} // Asumsi halaman messages adalah /messages
           className={`w-full justify-start ${isActive("/messages") ? "bg-orange-500 hover:bg-orange-600 text-white" : "text-orange-500 hover:text-orange-600 hover:bg-orange-50"}`}
@@ -89,7 +89,7 @@ export default function Sidebar() {
             <MessageCircle className="w-5 h-5 mr-3" />
             Message
           </Link>
-        </Button>
+        </Button> */}
 
         {/* Admin Only Menu - Conditional Rendering berdasarkan peran admin */}
         {isAdmin && (
@@ -99,10 +99,10 @@ export default function Sidebar() {
             {/* Manage Events */}
             <Button
               asChild
-              variant={isActive("/admin/events") ? "default" : "ghost"} // Asumsi halaman manage events adalah /admin/events
-              className={`w-full justify-start ${isActive("/admin/events") ? "bg-orange-500 hover:bg-orange-600 text-white" : "text-orange-500 hover:text-orange-600 hover:bg-orange-50"}`}
+              variant={isActive("/main/manage-event") ? "default" : "ghost"} // Asumsi halaman manage events adalah /main/events
+              className={`w-full justify-start ${isActive("/main/manage-event") ? "bg-orange-500 hover:bg-orange-600 text-white" : "text-orange-500 hover:text-orange-600 hover:bg-orange-50"}`}
             >
-              <Link href="/admin/events">
+              <Link href="/main/manage-event">
                 <Shield className="w-5 h-5 mr-3" />
                 Manage Events
               </Link>
@@ -111,10 +111,10 @@ export default function Sidebar() {
             {/* Manage Users */}
             <Button
               asChild
-              variant={isActive("/admin/users") ? "default" : "ghost"} // Asumsi halaman manage users adalah /admin/users
-              className={`w-full justify-start ${isActive("/admin/users") ? "bg-orange-500 hover:bg-orange-600 text-white" : "text-orange-500 hover:text-orange-600 hover:bg-orange-50"}`}
+              variant={isActive("/main/manage-user") ? "default" : "ghost"} // Asumsi halaman manage users adalah /main/users
+              className={`w-full justify-start ${isActive("/main/manage-user") ? "bg-orange-500 hover:bg-orange-600 text-white" : "text-orange-500 hover:text-orange-600 hover:bg-orange-50"}`}
             >
-              <Link href="/admin/users">
+              <Link href="/main/manage-user">
                 <Users className="w-5 h-5 mr-3" />
                 Manage Users
               </Link>

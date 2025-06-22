@@ -1,4 +1,4 @@
-import EventList from "@/components/event/EventList";
+
 import Header from "@/components/layout/Header";
 import Sidebar from "@/components/layout/Sidebar";
 import Navigation from "@/components/mobile/navigation/Navigation";
@@ -45,26 +45,5 @@ export default function DashboardLayout({
 
     )
 
-    return (
-        <div className="h-screen bg-gray-50">
-            {/* Header */}
-            <Header />
-
-            <div className="flex">
-                <Sidebar />
-
-                {/* Main Content */}
-                <main className="flex-1">
-                    {/* <main className="flex-1 p-4 lg:p-6 pb-20 lg:pb-6 "> */}
-                    {children}
-                </main>
-
-                {/* Right Sidebar - Hidden on mobile and tablet */}
-                <EventList />
-
-            </div>
-
-
-        </div>
-    )
+    
 }

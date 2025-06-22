@@ -109,7 +109,10 @@ export async function GET(req: Request) {
         user: {
             select:{
                 fullName:true,
-                id:true
+                id:true,
+                emailVerified:true,
+                image:true,
+                username:true
             }
         },
         images: {

@@ -27,7 +27,6 @@ export default function GeolocationMap({
   const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isDragging, setIsDragging] = useState(false)
-  const [address, setAddress] = useState("")
 
   // Refs for debouncing - Fixed with proper initial values
   const debounceRef = useRef<NodeJS.Timeout | null>(null)
@@ -117,7 +116,8 @@ export default function GeolocationMap({
       // Optional: hanya panggil onChange jika perlu
     }
     // Don't call onChange during drag to prevent performance issues
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [onChange])
 
   // Handle drag end - call onChange only when drag is complete
@@ -148,16 +148,7 @@ export default function GeolocationMap({
   //   }
   // }
 
-  // Reverse geocoding to get address (simplified)
-  const getAddress = useCallback(async (lat: number, lng: number) => {
-    try {
-      // This is a simplified address format - in real app you'd use Mapbox Geocoding API
-      setAddress(`${lat.toFixed(4)}, ${lng.toFixed(4)}`)
-    } catch (error) {
-      console.error("Error getting address:", error)
-      setAddress(`${lat.toFixed(4)}, ${lng.toFixed(4)}`)
-    }
-  }, [])
+
 
   // Reset to current location
   // const resetToCurrentLocation = useCallback(() => {
@@ -169,11 +160,7 @@ export default function GeolocationMap({
      // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []) // Remove getCurrentLocation from dependencies to prevent loops
 
-  useEffect(() => {
-    if (location) {
-      getAddress(location.lat, location.lng)
-    }
-  }, [location, getAddress])
+
 
   // Cleanup timeout on unmount
   useEffect(() => {
@@ -276,10 +263,7 @@ export default function GeolocationMap({
             </div>
           </div>
 
-          <div>
-            <Label htmlFor="address">Alamat</Label>
-            <Input id="address" value={address} readOnly className="bg-gray-50" />
-          </div>
+         
 
 
         </CardContent>

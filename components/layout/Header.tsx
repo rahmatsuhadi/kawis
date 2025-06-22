@@ -1,7 +1,7 @@
 "use client"
 
 import { MapPin, Shield } from "lucide-react"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { useSession } from "next-auth/react"
 import Image from "next/image"
@@ -16,9 +16,9 @@ export default function Header() {
   const { data } = useSession()
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false)
 
-  const {  address, setRadius,radius } = useGeolocation()
-  const router = useRouter()
 
+  const { address, setRadius, radius } = useGeolocation()
+  const router = useRouter()
   const handleLocationClick = () => {
     setIsLocationModalOpen(true)
   }
@@ -31,7 +31,7 @@ export default function Header() {
           <div className="flex items-center space-x-2">
             <Image src={"/brand.svg"} alt="logo" width={50} height={50} />
             <span className="font-semibold text-gray-800 text-sm lg:text-base">Kawis Kita</span>
-            
+
           </div>
 
           {/* Search Bar - Hidden on mobile */}
@@ -93,7 +93,7 @@ export default function Header() {
             onClick={() => router.push("/main/profile")}
           >
             <Avatar className="w-8 lg:w-10 h-8 lg:h-10">
-              <AvatarImage src="/placeholder.svg?height=40&width=40" />
+              {/* <AvatarImage src="/placeholder.jpg?height=40&width=40" /> */}
               <AvatarFallback>{getInitialName(data?.user.name as string)}</AvatarFallback>
             </Avatar>
             <div className="hidden sm:flex flex-col">

@@ -28,8 +28,8 @@ const userData = {
   location: "Yogyakarta, Indonesia",
   joinDate: "15 Jan 2024",
   role: "admin",
-  avatar: "/placeholder.svg?height=120&width=120",
-  coverImage: "/placeholder.svg?height=200&width=800",
+  avatar: "/placeholder.jpg?height=120&width=120",
+  coverImage: "/placeholder.jpg?height=200&width=800",
   stats: {
     eventsCreated: 5,
     postsCreated: 12,
@@ -47,7 +47,7 @@ const userData = {
 //     date: "25 Mei 2024",
 //     status: "approved",
 //     attendees: 120,
-//     image: "/placeholder.svg?height=100&width=150",
+//     image: "/placeholder.jpg?height=100&width=150",
 //   },
 //   {
 //     id: 2,
@@ -55,7 +55,7 @@ const userData = {
 //     date: "30 Mei 2024",
 //     status: "pending",
 //     attendees: 0,
-//     image: "/placeholder.svg?height=100&width=150",
+//     image: "/placeholder.jpg?height=100&width=150",
 //   },
 // ]
 
@@ -64,7 +64,7 @@ const userData = {
 //   {
 //     id: 1,
 //     content: "Amazing experience at the cultural festival! The traditional performances were absolutely stunning.",
-//     image: "/placeholder.svg?height=200&width=300",
+//     image: "/placeholder.jpg?height=200&width=300",
 //     likes: 24,
 //     comments: 8,
 //     timeAgo: "2 hours ago",
@@ -72,7 +72,7 @@ const userData = {
 //   {
 //     id: 2,
 //     content: "Looking forward to organizing more community events. Let's bring people together!",
-//     image: "/placeholder.svg?height=200&width=300",
+//     image: "/placeholder.jpg?height=200&width=300",
 //     likes: 18,
 //     comments: 5,
 //     timeAgo: "1 day ago",
@@ -105,7 +105,7 @@ export default function Profile({
               {/* Cover Image */}
               <div className="h-32 lg:h-48 bg-gradient-to-r from-orange-400 to-orange-600 rounded-t-lg relative overflow-hidden">
                 <Image
-                  src={user.image || "/placeholder.svg"}
+                  src={user.image || "/placeholder.jpg"}
                   alt="Cover"
                   fill
                   className="object-cover opacity-50"
@@ -125,7 +125,7 @@ export default function Profile({
                 <div className="flex flex-col sm:flex-row items-center sm:items-end gap-4 lg:gap-6 -mt-12 lg:-mt-16 relative z-10">
                   <div className="relative">
                     <Avatar className="w-20 lg:w-32 h-20 lg:h-32 border-4 border-white">
-                      <AvatarImage src={userData.avatar || "/placeholder.svg"} />
+                      <AvatarImage src={userData.avatar || "/placeholder.jpg"} />
                       <AvatarFallback className="text-lg lg:text-2xl">MJ</AvatarFallback>
                     </Avatar>
                     <Button

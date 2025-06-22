@@ -6,8 +6,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql" // Anda bisa ubah ini sesuai database Anda
-  url      = env("DATABASE_URL")
+  provider  = "postgresql" // Anda bisa ubah ini sesuai database Anda
+  url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
 
@@ -17,25 +17,27 @@ enum UserRole {
   ADMIN
 }
 
-
 model User {
-  id              String       @id @default(cuid()) // Note: NextAuth often defaults to cuid() or uuid()
-  fullName        String?      @unique @db.VarChar(255) // Username bisa nullable jika user hanya login via OAuth tanpa username
-  email           String       @unique @db.VarChar(255)
-  emailVerified   DateTime?    // Ditambahkan oleh adapter untuk verifikasi email
-  password        String?      @db.VarChar(255) // Password bisa nullable jika user hanya login via OAuth
-  role            UserRole     @default(USER)
-  image           String?      // Untuk URL gambar profil (dari OAuth atau kustom)
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
+  id            String    @id @default(cuid()) // Note: NextAuth often defaults to cuid() or uuid()
+  fullName      String?   @unique @db.VarChar(255) // Username bisa nullable jika user hanya login via OAuth tanpa username
+  username      String?   @unique @db.VarChar(255)
+  email         String    @unique @db.VarChar(255)
+  emailVerified DateTime? // Ditambahkan oleh adapter untuk verifikasi email
+  password      String?   @db.VarChar(255) // Password bisa nullable jika user hanya login via OAuth
+  role          UserRole  @default(USER)
+  image         String? // Untuk URL gambar profil (dari OAuth atau kustom)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   // Relasi yang digunakan oleh PrismaAdapter:
-  accounts        Account[]    // Menghubungkan user dengan akun OAuth/credential mereka
-  sessions        Session[]    // Menghubungkan user dengan sesi mereka
+  accounts Account[] // Menghubungkan user dengan akun OAuth/credential mereka
+  sessions Session[] // Menghubungkan user dengan sesi mereka
 
   // Relasi custom aplikasi Anda:
-  approvedEvents  Event[]
-  eventPosts      EventPost[]
+  approvedEvents Event[]
+  eventPosts     EventPost[]
+  comments       Comment[] // <--- TAMBAHKAN INI: Komentar yang dibuat oleh user ini
+  postLikes      PostLike[] // <--- TAMBAHKAN INI: Likes yang diberikan oleh user ini
 
   @@map("users")
 }
@@ -55,7 +57,7 @@ model Account {
   id_token          String? @db.Text
   session_state     String?
 
-  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
   @@map("accounts")
@@ -82,25 +84,28 @@ model VerificationToken {
   @@map("verification_tokens")
 }
 
-
 /// Model untuk Event
 model Event {
-  id              String       @id @default(uuid())
-  name            String       @db.VarChar(255)
-  description     String?      @db.Text
-  address         String       @db.VarChar(255)
+  id              String          @id @default(uuid())
+  name            String          @db.VarChar(255)
+  description     String?         @db.Text
+  address         String          @db.VarChar(255)
+  // Relasi ke EventCategory (tabel perantara)
+  eventCategories EventCategory[]
+  slug            String          @unique @db.VarChar(100)
   startDate       DateTime
   endDate         DateTime
-  latitude        Decimal      @db.Decimal(10, 8)
-  longitude       Decimal      @db.Decimal(11, 8)
-  anonymousName   String       @db.VarChar(255)
-  isApproved      Boolean      @default(false)
-  createdAt       DateTime     @default(now())
-  approvedBy      User?        @relation(fields: [approvedById], references: [id])
+  latitude        Decimal         @db.Decimal(10, 8)
+  longitude       Decimal         @db.Decimal(11, 8)
+  organizerName   String?          @db.VarChar(255)
+  anonymousName   String          @db.VarChar(255)
+  isApproved      Boolean         @default(false)
+  createdAt       DateTime        @default(now())
+  approvedBy      User?           @relation(fields: [approvedById], references: [id])
   approvedById    String?
 
-  images          EventImage[] // Relasi One-to-Many ke EventImage
-  posts           EventPost[]
+  images EventImage[] // Relasi One-to-Many ke EventImage
+  posts  EventPost[]
 
   @@map("events")
 }
@@ -116,29 +121,89 @@ model EventImage {
   @@map("event_images")
 }
 
+// Model baru untuk Kategori
+model Category {
+  id        String   @id @default(uuid())
+  name      String   @unique @db.VarChar(100) // Nama kategori (misal: "Musik", "Seni")
+  slug      String   @unique @db.VarChar(100) // Slug unik untuk URL (misal: "musik-seni")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relasi balik ke EventCategory
+  eventCategories EventCategory[]
+
+  @@map("categories")
+}
+
+// Model baru untuk Tabel Perantara (EventCategory)
+model EventCategory {
+  eventId    String
+  categoryId String
+  assignedAt DateTime @default(now())
+
+  // Relasi ke Event
+  event    Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  // Relasi ke Category
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([eventId, categoryId]) // Primary key komposit untuk memastikan unik
+  @@map("event_categories")
+}
+
 /// Model untuk Postingan Event
 model EventPost {
-  id              String    @id @default(uuid())
-  eventId         String
-  event           Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  content         String    @db.Text
-  postedByName    String    @db.VarChar(255)
-  createdAt       DateTime  @default(now())
-
-  images          EventPostImage[] // Relasi One-to-Many ke EventPostImage
-  userId          String?
-  user            User?     @relation(fields: [userId], references: [id])
+  id           String           @id @default(uuid())
+  eventId      String
+  event        Event            @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  content      String           @db.Text
+  postedByName String           @db.VarChar(255)
+  createdAt    DateTime         @default(now())
+  likes        Int              @default(0)
+  images       EventPostImage[] // Relasi One-to-Many ke EventPostImage
+  userId       String?
+  user         User?            @relation(fields: [userId], references: [id])
+  PostLike     PostLike[]
+  comments     Comment[] // Relasi One-to-Many ke Comment
 
   @@map("event_posts")
 }
 
 /// Model untuk menyimpan informasi setiap gambar Postingan Event
 model EventPostImage {
-  id        String   @id @default(uuid())
+  id          String    @id @default(uuid())
   eventPostId String
-  eventPost EventPost @relation(fields: [eventPostId], references: [id], onDelete: Cascade)
-  imageUrl  String   @db.VarChar(2048) // URL dari gambar
-  createdAt DateTime @default(now())
+  eventPost   EventPost @relation(fields: [eventPostId], references: [id], onDelete: Cascade)
+  imageUrl    String    @db.VarChar(2048) // URL dari gambar
+  createdAt   DateTime  @default(now())
 
   @@map("event_post_images")
+}
+
+// Model untuk Komentar
+model Comment {
+  id        String   @id @default(uuid())
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  postId String
+  post   EventPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id]) // User yang membuat komentar
+
+  @@map("comments")
+}
+
+model PostLike {
+  id        String   @id @default(uuid())
+  postId    String
+  userId    String
+  createdAt DateTime @default(now())
+
+  post EventPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId]) // Memastikan satu user hanya bisa like satu post sekali
+  @@map("post_likes")
 }
