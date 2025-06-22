@@ -41,7 +41,7 @@ export const GeolocationProvider: React.FC<GeolocationProviderProps> = ({ childr
   const reverseGeocoding = async (latitude: number, longitude: number) => {
     try {
       const response = await fetch(
-        `/api/reverse?lat=${latitude}&lon=${longitude}&format=json`
+        `/api/location/reverse-geocode?lat=${latitude}&lon=${longitude}&format=json`
       );
       const data: ReverseGeocodeResponse = await response.json();
       if (response.ok) {
