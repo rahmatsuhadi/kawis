@@ -30,16 +30,29 @@ export default function Header() {
           {/* Logo */}
           <div className="flex items-center space-x-2">
             <Image src={"/brand.svg"} alt="logo" width={50} height={50} />
-            <span className="font-semibold text-gray-800 text-sm lg:text-base">Kawis Kita</span>
+            <span className="font-semibold hidden md:flex text-gray-800 text-sm lg:text-base">Kawis Kita</span>
 
           </div>
 
+           {/* Mobile Location Button */}
+          <div className="md:hidden">
+            <button
+              onClick={handleLocationClick}
+              className="flex items-center gap-2 px-3 py-2 bg-orange-50 border border-orange-200 rounded-lg hover:bg-orange-100 transition-colors"
+            >
+              <MapPin className="w-4 h-4 text-orange-500" />
+              <span className="text-sm text-orange-600 truncate max-w-[100px]">
+                {address ? address.split(",")[0] : "Set Lokasi"}
+              </span>
+            </button>
+          </div>
+
           {/* Search Bar - Hidden on mobile */}
-          <div className="hidden md:flex flex-1 max-w-2xl mx-8">
+          <div className="flex-1 max-w-2xl mx-3">
             <div className="flex gap-4 flex-row">
               {/* Location Display - Clickable */}
               <div
-                className="shadow-xl rounded-l-2xl px-3 py-2 border border-black/20 flex items-center cursor-pointer hover:bg-orange-50 transition-colors"
+                className="shadow-xl hidden md:flex  rounded-l-2xl px-3 py-2 border border-black/20  items-center cursor-pointer hover:bg-orange-50 transition-colors"
                 onClick={handleLocationClick}
                 title="Klik untuk mengubah lokasi"
               >
@@ -49,7 +62,7 @@ export default function Header() {
               {/* Radius Selector */}
               <Select value={radius} onValueChange={setRadius}>
                 <SelectTrigger
-                  className="w-[100px] h-full border shadow-xl border-black/20 rounded-none text-orange-500"
+                  className="  md:w-[100px] h-full border shadow-xl border-black/20 rounded-none text-orange-500"
                   style={{ height: "100%" }}
                 >
                   <SelectValue />
@@ -65,7 +78,7 @@ export default function Header() {
 
               {/* Map Icon - Also clickable */}
               <div
-                className="shadow-xl rounded-r-2xl py-2 px-4 border flex items-center border-black/20 cursor-pointer hover:bg-orange-50 transition-colors"
+                className="shadow-xl hidden md:flex  rounded-r-2xl py-2 px-4 border  items-center border-black/20 cursor-pointer hover:bg-orange-50 transition-colors"
                 onClick={handleLocationClick}
                 title="Klik untuk mengubah lokasi"
               >
@@ -74,18 +87,7 @@ export default function Header() {
             </div>
           </div>
 
-          {/* Mobile Location Button */}
-          <div className="md:hidden">
-            <button
-              onClick={handleLocationClick}
-              className="flex items-center gap-2 px-3 py-2 bg-orange-50 border border-orange-200 rounded-lg hover:bg-orange-100 transition-colors"
-            >
-              <MapPin className="w-4 h-4 text-orange-500" />
-              <span className="text-sm text-orange-600 truncate max-w-[100px]">
-                {address ? address.split(",")[0] : "Set Lokasi"}
-              </span>
-            </button>
-          </div>
+         
 
           {/* User Profile */}
           <div

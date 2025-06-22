@@ -29,10 +29,11 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Latitude and Longitude are required' }, { status: 400 });
   }
 
+ const apiUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
   try {
     // Lakukan request ke OpenStreetMap Nominatim API
     const response = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`
+      `${apiUrl}/api/reverse?lat=${lat}&lon=${lon}&format=json`
     );
 
     if (!response.ok) {
@@ -47,6 +48,6 @@ export async function GET(request: Request) {
   } catch (error) {
     console.log(error)
     // Tangani error
-    return NextResponse.json({ error: 'gagal mengambil lokasi dari geolocation' }, { status: 500 });
+    return NextResponse.json({ error: 'gagal mengambil lokasi dari geolocation', code: error }, { status: 500 });
   }
 }

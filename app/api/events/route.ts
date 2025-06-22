@@ -168,9 +168,13 @@ export async function GET(req: Request) {
         createdAt: "desc",
       },
       include: {
-        images: true,
+        images: {
+          select: {
+            imageUrl: true,
+          },
+        },
         approvedBy: { select: { id: true, email: true, fullName: true, username: true } },
-        eventCategories: { include: { category: { select: { id: true, name: true, slug: true } } } },
+        eventCategories: { select: { category: { select: { id: true, name: true, slug: true } } } },
       },
     });
 

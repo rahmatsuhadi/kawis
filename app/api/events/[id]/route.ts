@@ -21,9 +21,9 @@ export async function GET(req: Request, { params }: EventDetailParams) {
     }
 
     // 2. Cari Event di Database
-    const event = await prisma.event.findUnique({
+    const event = await prisma.event.findFirst({
       where: {
-        id: id,
+        slug: id,
         isApproved: true, // Hanya tampilkan event yang sudah disetujui
       },
       include: {

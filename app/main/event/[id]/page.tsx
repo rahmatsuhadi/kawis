@@ -31,7 +31,7 @@ export async function getEventDetail(id: string): Promise<EventDetail | null> {
     });
 
     if (!res.ok) {
-        console.error(`Failed to fetch event details for ID ${id}: ${res.status} ${res.statusText}`);
+        // console.error(`Failed to fetch event details for ID ${id}: ${res.status} ${res.statusText}`);
         // Jika event tidak ditemukan atau tidak disetujui, kembalikan null
         if (res.status === 404) return null;
         // Untuk error lain, lempar error agar bisa ditangkap oleh error boundary atau fallback
