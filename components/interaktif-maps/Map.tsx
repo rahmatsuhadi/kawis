@@ -1,13 +1,13 @@
 "use client"
 
-import React, { useState, useMemo } from "react"
+import React, { useState, useMemo, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import Map, { Marker, Source, Layer } from "react-map-gl/mapbox"
 import { Info, MapPin, Navigation, Target } from "lucide-react"
 import "mapbox-gl/dist/mapbox-gl.css"
 import { useQuery } from "@tanstack/react-query"
-import { EventsApiResponse, fetchEvents } from "../event/EventList"
+import { EventResponse, EventsApiResponse, fetchEvents } from "../event/EventList"
 import { useGeolocation } from "@/context/geolocation-context"
 import { Separator } from "../ui/separator"
 import Link from "next/link"
@@ -204,29 +204,9 @@ export default function LocationRadar() {
                   </Marker>
 
                   {/* Location markers */}
-                  {locationsInRange.map((location) => (
-                    <Marker
-                      key={location.id}
-                      longitude={Number(location.longitude)}
-                      latitude={Number(location.latitude)}
-                      anchor="center"
-                    >
-                      <div className="relative group">
-                        {/* Small marker dot */}
-                        <div className="w-5 h-5 bg-red-500 rounded-full border-2 border-white shadow-lg cursor-pointer hover:scale-125 transition-transform"></div>
-
-                        {/* Tooltip on hover */}
-                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-black text-white text-xs rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
-                          {location.name}
-                          {location.distanceKm && (
-                            <div className="text-xs opacity-75">{location.distanceKm.toFixed(1)} km</div>
-                          )}
-                          {/* Tooltip arrow */}
-                          <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-2 border-r-2 border-t-2 border-transparent border-t-black"></div>
-                        </div>
-                      </div>
-                    </Marker>
-                  ))}
+                  {/* {locationsInRange.map((location) => ( */}
+                  <MapMarkers locations={locationsInRange} />
+                  {/* ))} */}
                 </Map>
               )}
 
@@ -258,22 +238,22 @@ export default function LocationRadar() {
             <div className="space-y-2">
               {locationsInRange.map((location) => (
                 <Link key={location.id} href={"/main/event/" + location.slug}>
-                <div  className="flex items-center gap-3 p-2 rounded-lg bg-gray-50">
-                  <div
-                   
-                    className="w-8 h-8 rounded-full bg-red-500"
-                  />
-                  <div className="flex-1">
-                    <p className="font-medium text-sm">{location.name}</p>
-                    {/* <p className="text-xs text-gray-500 capitalize">{location.type}</p> */}
+                  <div className="flex items-center gap-3 p-2 rounded-lg bg-gray-50">
+                    <div
+
+                      className="w-8 h-8 rounded-full bg-red-500"
+                    />
+                    <div className="flex-1">
+                      <p className="font-medium text-sm">{location.name}</p>
+                      {/* <p className="text-xs text-gray-500 capitalize">{location.type}</p> */}
+                    </div>
+                    <div className="text-xs text-gray-400">
+                      {userLocation &&
+                        `${calculateDistance(userLocation.latitude, userLocation.longitude, Number(location.latitude), Number(location.longitude)).toFixed(
+                          1
+                        )} km`}
+                    </div>
                   </div>
-                  <div className="text-xs text-gray-400">
-                    {userLocation &&
-                      `${calculateDistance(userLocation.latitude, userLocation.longitude, Number(location.latitude), Number(location.longitude)).toFixed(
-                        1
-                      )} km`}
-                  </div>
-                </div>
                 </Link>
               ))}
             </div>
@@ -359,3 +339,65 @@ export default function LocationRadar() {
 
   )
 }
+
+
+const MapMarkers = ({ locations }: { locations: EventResponse[] }) => {
+  const [activeMarker, setActiveMarker] = useState<string | null>(null); // Menyimpan marker aktif yang sedang diklik
+  const [isMobile, setIsMobile] = useState(false); // Untuk mendeteksi apakah perangkat mobile
+
+  // Efek untuk mendeteksi ukuran layar (mobile vs desktop)
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768); // Tentukan apakah ini perangkat mobile
+    };
+
+    window.addEventListener("resize", handleResize);
+    handleResize(); // Pastikan untuk memanggil saat pertama kali
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
+  const handleClick = (id: string) => {
+    if (isMobile) {
+      // Jika perangkat mobile, toggle visibility tooltip
+      setActiveMarker(id === activeMarker ? null : id); // Toggle visibility
+    }
+  };
+
+  return (
+    <>
+      {locations.map((location) => (
+        <Marker
+          key={location.id}
+          longitude={Number(location.longitude)}
+          latitude={Number(location.latitude)}
+          anchor="center"
+        >
+          <div className="relative group">
+            {/* Small marker dot */}
+            <div
+              className="w-5 h-5 bg-red-500 rounded-full border-2 border-white shadow-lg cursor-pointer hover:scale-125 transition-transform"
+              onClick={() => handleClick(location.id)} // Handle click on mobile
+            ></div>
+
+            {/* Tooltip (hover on desktop, click on mobile) */}
+            {(isMobile ? activeMarker === location.id : false) || !isMobile ? ( // Show tooltip on click (mobile) or hover (desktop)
+              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-black text-white text-xs rounded whitespace-nowrap opacity-100 transition-opacity pointer-events-none z-10">
+                {location.name}
+                {location.distanceKm && (
+                  <div className="text-xs opacity-75">
+                    {location.distanceKm.toFixed(1)} km
+                  </div>
+                )}
+                {/* Tooltip arrow */}
+                <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-2 border-r-2 border-t-2 border-transparent border-t-black"></div>
+              </div>
+            ) : null}
+          </div>
+        </Marker>
+      ))}
+    </>
+  );
+};

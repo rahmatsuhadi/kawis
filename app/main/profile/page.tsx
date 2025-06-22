@@ -17,6 +17,7 @@ import {
 import LogoutModal from "@/components/profile/ModalLogout"
 import { useSession } from "next-auth/react"
 import { redirect } from "next/navigation"
+import getInitialName from "@/lib/getInitialName"
 
 // Mock user data
 const userData = {
@@ -86,11 +87,11 @@ export default function Profile({
   const [isEditing, setIsEditing] = useState(false)
   // const [editedData, setEditedData] = useState(userData)
 
-  const {data} = useSession()
+  const { data } = useSession()
 
-  if(!data) redirect("/")
+  if (!data) redirect("/")
 
-    const user = data.user
+  const user = data.user
 
 
 
@@ -126,7 +127,7 @@ export default function Profile({
                   <div className="relative">
                     <Avatar className="w-20 lg:w-32 h-20 lg:h-32 border-4 border-white">
                       <AvatarImage src={userData.avatar || "/placeholder.jpg"} />
-                      <AvatarFallback className="text-lg lg:text-2xl">MJ</AvatarFallback>
+                      <AvatarFallback className="text-lg lg:text-2xl">{getInitialName(user.name as string)}</AvatarFallback>
                     </Avatar>
                     <Button
                       variant="secondary"
@@ -169,7 +170,7 @@ export default function Profile({
                         <p className="text-lg lg:text-xl font-bold text-blue-600">{userData.stats.postsCreated}</p>
                         <p className="text-xs lg:text-sm text-gray-600">Posts</p>
                       </div>
-                      <div className="text-center">
+                      {/* <div className="text-center">
                         <p className="text-lg lg:text-xl font-bold text-green-600">{userData.stats.eventsAttended}</p>
                         <p className="text-xs lg:text-sm text-gray-600">Attended</p>
                       </div>
@@ -180,7 +181,7 @@ export default function Profile({
                       <div className="text-center">
                         <p className="text-lg lg:text-xl font-bold text-pink-600">{userData.stats.following}</p>
                         <p className="text-xs lg:text-sm text-gray-600">Following</p>
-                      </div>
+                      </div> */}
                     </div>
                   </div>
                 </div>
@@ -197,38 +198,21 @@ export default function Profile({
                 <Label htmlFor="name" className="text-sm lg:text-base">
                   Full Name
                 </Label>
-                <Input id="name" defaultValue={userData.name} className="mt-1" />
+                <Input id="name" defaultValue={user.name} className="mt-1" />
               </div>
               <div>
                 <Label htmlFor="email-settings" className="text-sm lg:text-base">
                   Email
                 </Label>
-                <Input id="email-settings" type="email" defaultValue={userData.email} className="mt-1" />
+                <Input id="email-settings" type="email" defaultValue={user.email as string} className="mt-1" />
               </div>
               <Separator />
-              <div>
-                <h4 className="font-medium mb-2 text-sm lg:text-base">Privacy Settings</h4>
-                <div className="space-y-2">
-                  <label className="flex items-center space-x-2">
-                    <input type="checkbox" defaultChecked />
-                    <span className="text-xs lg:text-sm">Make my profile public</span>
-                  </label>
-                  <label className="flex items-center space-x-2">
-                    <input type="checkbox" defaultChecked />
-                    <span className="text-xs lg:text-sm">Allow others to see my events</span>
-                  </label>
-                  <label className="flex items-center space-x-2">
-                    <input type="checkbox" />
-                    <span className="text-xs lg:text-sm">Send me email notifications</span>
-                  </label>
-                </div>
-              </div>
               <Button className="bg-orange-500 hover:bg-orange-600 text-sm lg:text-base">Save Settings</Button>
             </CardContent>
           </Card>
 
 
-            <LogoutModal/>
+          <LogoutModal />
         </div>
       </main>
     </>

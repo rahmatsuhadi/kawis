@@ -7,16 +7,17 @@ import { useRouter } from "next/navigation"
 import Image from "next/image"
 import { EventResponse } from "./EventList"
 
-
 interface EventListSimpleProps {
   events: EventResponse[]
   layout?: "vertical" | "horizontal"
   showDistance?: boolean
+  isLoading: boolean
   showOrganizer?: boolean
   compact?: boolean
 }
 
 export default function EventListSimple({
+  isLoading = true,
   events,
   layout = "vertical",
   showDistance = true,
@@ -134,6 +135,15 @@ export default function EventListSimple({
             </Card>
           )
         })}
+        {isLoading && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <div key={index} className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+              <EventItemSkeleton layout="horizontal" compact={false} />
+            </div>
+          ))}
+        </div>
+        )}
       </div>
     )
   }
@@ -215,9 +225,18 @@ export default function EventListSimple({
           </Card>
         )
       })}
+      {isLoading && (
+        <div className="space-y-2">
+        {Array.from({ length: 8 }).map((_, index) => (
+          <div key={index} className="bg-white border border-gray-200 rounded-lg">
+            <EventItemSkeleton layout="vertical" compact={false} />
+          </div>
+        ))}
+      </div>
+      )}
 
       {/* Empty State */}
-      {events.length === 0 && (
+      {!isLoading && events.length === 0 && (
         <Card className="border-dashed border-2 border-gray-200">
           <CardContent className="p-8 text-center">
             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -228,6 +247,62 @@ export default function EventListSimple({
           </CardContent>
         </Card>
       )}
+    </div>
+  )
+}
+
+
+const EventItemSkeleton = ({ layout, compact }: { layout: "vertical" | "horizontal"; compact: boolean }) => {
+  if (layout === "horizontal") {
+    return (
+      <div className="cursor-pointer overflow-hidden animate-pulse">
+        {/* Event Image Skeleton */}
+        <div className="relative h-32 bg-gray-200 rounded-t-lg"></div>
+
+        <div className="p-3 space-y-2">
+          {/* Title Skeleton */}
+          <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+          <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+
+          {/* Details Skeleton */}
+          <div className="space-y-1">
+            <div className="h-3 bg-gray-200 rounded w-2/3"></div>
+            <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+            <div className="h-3 bg-gray-200 rounded w-3/5"></div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="border-l-4 border-l-gray-200 animate-pulse">
+      <div className={`${compact ? "p-3" : "p-4"}`}>
+        <div className="flex items-center space-x-3">
+          {/* Event Image Skeleton */}
+          <div className="relative flex-shrink-0">
+            <div className={`${compact ? "w-12 h-12" : "w-16 h-16"} rounded-lg bg-gray-200`}></div>
+          </div>
+
+          {/* Event Details Skeleton */}
+          <div className="flex-1 min-w-0 space-y-2">
+            <div className="flex items-start justify-between">
+              <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+              <div className="h-5 bg-gray-200 rounded w-16 flex-shrink-0"></div>
+            </div>
+
+            <div className="space-y-1">
+              <div className="h-3 bg-gray-200 rounded w-2/3"></div>
+              <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+            </div>
+          </div>
+
+          {/* Action Indicator Skeleton */}
+          <div className="flex-shrink-0">
+            <div className="w-6 h-6 rounded-full bg-gray-200"></div>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

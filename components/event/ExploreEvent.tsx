@@ -11,6 +11,10 @@ import { useQuery } from "@tanstack/react-query"
 import { EventsApiResponse, fetchEvents } from "./EventList"
 
 
+
+
+
+
 export default function ExploreEvent() {
     const [viewMode, setViewMode] = useState<"vertical" | "horizontal">("vertical")
 
@@ -21,6 +25,7 @@ export default function ExploreEvent() {
     const currentRadius = radius;
     const {
         data,
+        isPending: isLoading,
     } = useQuery<EventsApiResponse, Error>({ // Gunakan EventsApiResponse sebagai tipe data
         // queryKey: ["events",],
         enabled: !!location,
@@ -91,6 +96,7 @@ export default function ExploreEvent() {
 
                         <TabsContent value="all" className="mt-4">
                             <EventListSimple
+                            isLoading={isLoading}
                                 events={allEvents}
                                 layout={viewMode}
                                 showDistance={true}
@@ -101,16 +107,18 @@ export default function ExploreEvent() {
 
                         <TabsContent value="nearby" className="mt-4">
                             <EventListSimple
+                            isLoading={isLoading}
                                 events={nearbyEvents}
                                 layout={viewMode}
                                 showDistance={true}
                                 showOrganizer={false}
-                                compact={true}
+                                compact={false}
                             />
                         </TabsContent>
 
                         <TabsContent value="upcoming" className="mt-4">
                             <EventListSimple
+                            isLoading={isLoading}
                                 events={upcomingEvents}
                                 layout={viewMode}
                                 showDistance={true}
