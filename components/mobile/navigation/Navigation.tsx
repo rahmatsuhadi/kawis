@@ -1,7 +1,8 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { Calendar, Home, MapPin, Search, User2 } from "lucide-react"
+import { Calendar, Home, LogInIcon, MapPin, Search, User2 } from "lucide-react"
+import { useSession } from "next-auth/react";
 
 import Link from "next/link"
 import { usePathname } from "next/navigation";
@@ -9,7 +10,7 @@ import { usePathname } from "next/navigation";
 export default function Navigation() {
     // const router = useRouter();
     const pathname = usePathname(); // Hook untuk mendapatkan path URL saat ini
-    // const { data: session, status } = useSession(); // Dapatkan sesi user
+    const { data: session, status } = useSession(); // Dapatkan sesi user
 
     // Helper untuk menentukan apakah link aktif
     const isActive = (path: string) => pathname === path;
@@ -38,25 +39,27 @@ export default function Navigation() {
                         <span className="text-xs mt-1">Maps</span>
                     </Link>
                 </Button>
-                <Button asChild variant="ghost" size="sm"  className={`flex flex-col items-center p-2 ${isActive("/main/explore") ? 'text-orange-500' : 'text-gray-500'} `}>
-                     <Link href="/main/explore">
-                       <Search className="w-5 h-5" />
-                    <span className="text-xs mt-1">Explore</span>
+                <Button asChild variant="ghost" size="sm" className={`flex flex-col items-center p-2 ${isActive("/main/explore") ? 'text-orange-500' : 'text-gray-500'} `}>
+                    <Link href="/main/explore">
+                        <Search className="w-5 h-5" />
+                        <span className="text-xs mt-1">Explore</span>
                     </Link>
-                    
+
                 </Button>
-                <Button
-                    className={`flex flex-col items-center p-2 ${isActive("/main/event-create") ? 'text-orange-500' : 'text-gray-500'} `}
-                    variant={"ghost"}
-                    asChild
-                    size="sm"
-                    onClick={() => console.log("post-event")}
-                >
-                    <Link href={"/main/event-create"}>
-                        <Calendar className="w-5 h-5" />
-                        <span className="text-xs mt-1"> Add Event</span>
-                    </Link>
-                </Button>
+                {session && (
+                    <Button
+                        className={`flex flex-col items-center p-2 ${isActive("/main/event-create") ? 'text-orange-500' : 'text-gray-500'} `}
+                        variant={"ghost"}
+                        asChild
+                        size="sm"
+                        onClick={() => console.log("post-event")}
+                    >
+                        <Link href={"/main/event-create"}>
+                            <Calendar className="w-5 h-5" />
+                            <span className="text-xs mt-1"> Add Event</span>
+                        </Link>
+                    </Button>
+                )}
                 {/* <Button
                     variant="ghost"
                     size="sm"
@@ -66,15 +69,30 @@ export default function Navigation() {
                     <MessageCircle className="w-5 h-5" />
                     <span className="text-xs mt-1">Message</span>
                 </Button> */}
-                <Button
-                    variant="ghost"
-                    size="sm"
-                    className="flex flex-col items-center p-2 text-gray-500"
-                    onClick={() => console.log("messaging")}
-                >
-                    <User2 className="w-5 h-5" />
-                    <span className="text-xs mt-1">Profile</span>
-                </Button>
+                {!!session ? (
+                    <Button
+                        asChild
+                        variant="ghost"
+                        size="sm"
+                        className={`flex flex-col items-center p-2 ${isActive("/main/profile") ? 'text-orange-500' : 'text-gray-500'} `}> 
+                        <Link href={"/main/profile"}>
+                            <User2 className="w-5 h-5" />
+                            <span className="text-xs mt-1">Profile</span>
+                        </Link>
+                    </Button>
+                ) : (
+                    <Button
+                        asChild
+                        variant="ghost"
+                        size="sm"
+                        className={`flex flex-col items-center p-2 ${isActive("/main/login") ? 'text-orange-500' : 'text-gray-500'} `}>
+                        <Link href={"/login"}>
+                            <LogInIcon className="w-5 h-5" />
+                            <span className="text-xs mt-1">Masuk</span>
+                        </Link>
+
+                    </Button>
+                )}
             </div>
         </div >
     )

@@ -68,14 +68,14 @@ export default function EventList() {
 
   return (
     <aside className="hidden xl:block w-[450px] bg-white border-l border-gray-200 p-6  ">
-    <NearbyEventsCard
-      maxEvents={3}
-    events={events}
-    
-    title="Event Terdekat"
-    showViewAll={true}
-    onViewAll={() => console.log("View all clicked")}
-    />
+      <NearbyEventsCard
+        maxEvents={3}
+        events={events}
+
+        title="Event Terdekat"
+        showViewAll={true}
+        onViewAll={() => console.log("View all clicked")}
+      />
     </aside>
   )
 

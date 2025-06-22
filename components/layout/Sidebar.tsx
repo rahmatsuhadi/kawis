@@ -56,7 +56,8 @@ export default function Sidebar() {
         </Button>
 
         {/* Post Event */}
-        <Button
+       {session && (
+         <Button
           asChild
           variant={isActive("/main/event-create") ? "default" : "ghost"} // Asumsi halaman create event adalah /main/event-create
           className={`w-full justify-start ${isActive("/main/event-create") ? "bg-orange-500 hover:bg-orange-600 text-white" : "text-orange-500 hover:text-orange-600 hover:bg-orange-50"}`}
@@ -66,6 +67,7 @@ export default function Sidebar() {
             Post Event
           </Link>
         </Button>
+       )}
 
         {/* Create Post */}
         {/* <Button

@@ -1,6 +1,6 @@
 "use client"
 
-import { MapPin, Shield } from "lucide-react"
+import { LogIn, MapPin, Shield } from "lucide-react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { useSession } from "next-auth/react"
@@ -11,9 +11,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { useGeolocation } from "@/context/geolocation-context"
 import { useRouter } from "next/navigation"
 import LocationModal from "../interaktif-maps/location-modal"
+import { Button } from "../ui/button"
 
 export default function Header() {
-  const { data } = useSession()
+  const { data: session, status } = useSession()
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false)
 
 
@@ -21,6 +22,16 @@ export default function Header() {
   const router = useRouter()
   const handleLocationClick = () => {
     setIsLocationModalOpen(true)
+  }
+
+  const handleAuthClick = () => {
+    if (session) {
+      // Jika sudah login, ke halaman profile
+      router.push("/main/profile")
+    } else {
+      // Jika belum login, ke halaman login
+      router.push("/login")
+    }
   }
 
   return (
@@ -89,25 +100,57 @@ export default function Header() {
 
          
 
-          {/* User Profile */}
-          <div
-            className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors"
-            onClick={() => router.push("/main/profile")}
-          >
-            <Avatar className="w-8 lg:w-10 h-8 lg:h-10">
-              {/* <AvatarImage src="/placeholder.jpg?height=40&width=40" /> */}
-              <AvatarFallback>{getInitialName(data?.user.name as string)}</AvatarFallback>
-            </Avatar>
-            <div className="hidden sm:flex flex-col">
-              <span className="font-medium text-sm lg:text-base">{data?.user.name}</span>
-              {data?.user.role == "ADMIN" && (
-                <Badge variant="secondary" className="bg-blue-100 text-blue-700 text-xs">
-                  <Shield className="w-3 h-3 mr-1" />
-                  Admin
-                </Badge>
-              )}
+          {/* User Profile / Login Button */}
+          {status === "loading" ? (
+            // Loading state
+            <div className="flex items-center space-x-2 p-2">
+              <div className="w-8 lg:w-10 h-8 lg:h-10 bg-gray-200 rounded-full animate-pulse"></div>
+              <div className="hidden sm:flex flex-col space-y-1">
+                <div className="h-4 bg-gray-200 rounded w-20 animate-pulse"></div>
+              </div>
             </div>
-          </div>
+          ) : session ? (
+            // Logged in - Show user profile
+            <div
+              className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors"
+              onClick={handleAuthClick}
+            >
+              <Avatar className="w-8 lg:w-10 h-8 lg:h-10">
+                <AvatarFallback>{getInitialName(session.user.name as string)}</AvatarFallback>
+              </Avatar>
+              <div className="hidden sm:flex flex-col">
+                <span className="font-medium text-sm lg:text-base">{session.user.name}</span>
+                {session.user.role === "ADMIN" && (
+                  <Badge variant="secondary" className="bg-blue-100 text-blue-700 text-xs">
+                    <Shield className="w-3 h-3 mr-1" />
+                    Admin
+                  </Badge>
+                )}
+              </div>
+            </div>
+          ) : (
+            // Not logged in - Show login button
+            <div className="flex items-center space-x-2">
+              {/* Mobile Login Button */}
+              <Button
+                onClick={handleAuthClick}
+                size="sm"
+                className="sm:hidden bg-orange-500 hover:bg-orange-600 text-white px-3 py-2"
+              >
+                <LogIn className="w-4 h-4" />
+              </Button>
+
+              {/* Desktop Login Button */}
+              <Button
+                onClick={handleAuthClick}
+                size="sm"
+                className="hidden sm:flex bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 items-center gap-2"
+              >
+                <LogIn className="w-4 h-4" />
+                <span>Masuk</span>
+              </Button>
+            </div>
+          )}
         </div>
       </header>
 
