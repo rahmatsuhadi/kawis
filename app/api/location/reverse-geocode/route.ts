@@ -29,7 +29,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Latitude and Longitude are required' }, { status: 400 });
   }
 
-  const apiUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  // const apiUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
   try {
     // Lakukan request ke OpenStreetMap Nominatim API
     // const response = await fetch(
