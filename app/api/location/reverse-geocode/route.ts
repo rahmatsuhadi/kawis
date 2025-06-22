@@ -36,7 +36,11 @@ export async function GET(request: Request) {
     //   `${apiUrl}/api/reverse?lat=${lat}&lon=${lon}&format=json`
     // );
 
-    const response = await fetch("https://nominatim.openstreetmap.org/reverse?format=json&lat=" + lat + "&lon=" + lon)
+    const response = await fetch("https://nominatim.openstreetmap.org/reverse?format=json&lat=" + lat + "&lon=" + lon,{
+      headers: {
+        'User-Agent': 'MyAppName/1.0 (kuruyukihime008@gmail.com)'
+      }
+    })
 
     if (!response.ok) {
       return NextResponse.json({ error: 'Failed to fetch address from OpenStreetMap', response: response }, { status: 500 });
