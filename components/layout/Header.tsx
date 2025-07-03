@@ -1,7 +1,7 @@
 "use client"
 
 import { LogIn, MapPin, Shield } from "lucide-react"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { useSession } from "next-auth/react"
 import Image from "next/image"
@@ -14,7 +14,7 @@ import LocationModal from "../interaktif-maps/location-modal"
 import { Button } from "../ui/button"
 
 export default function Header() {
-  const { data: session, status } = useSession()
+  const { data: session, status, } = useSession()
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false)
 
 
@@ -51,7 +51,7 @@ export default function Header() {
               onClick={handleLocationClick}
               className="flex items-center gap-2 px-3 py-2 bg-orange-50 border border-orange-200 rounded-lg hover:bg-orange-100 transition-colors"
             >
-              <MapPin className="w-4 h-4 text-orange-500" />
+              <MapPin className="w-4 h-4 text-primary" />
               <span className="text-sm text-orange-600 truncate max-w-[100px]">
                 {address ? address.split(",")[0] : "Set Lokasi"}
               </span>
@@ -63,18 +63,18 @@ export default function Header() {
             <div className="flex gap-4 flex-row">
               {/* Location Display - Clickable */}
               <div
-                className="shadow-xl hidden md:flex  rounded-l-2xl px-3 py-2 border border-black/20  items-center cursor-pointer hover:bg-orange-50 transition-colors"
+                className="hidden md:flex  rounded-l-2xl px-3 py-2 border border-black/20  items-center cursor-pointer hover:bg-orange-50 transition-colors"
                 onClick={handleLocationClick}
                 title="Klik untuk mengubah lokasi"
               >
-                <h4 className="text-orange-500 truncate max-w-[250px]">{address || "Klik untuk set lokasi"}</h4>
+                <h5 className="text-primary truncate text-sm max-w-[300px]">{address || "Klik untuk set lokasi"}</h5>
               </div>
 
               {/* Radius Selector */}
               <Select value={radius} onValueChange={setRadius}>
                 <SelectTrigger
-                  className="  md:w-[100px] h-full border shadow-xl border-black/20 rounded-none text-orange-500"
-                  style={{ height: "100%" }}
+                  className="  md:w-[100px] h-full border border-black/20 rounded-none text-primary"
+                  style={{ height: 42 }}
                 >
                   <SelectValue />
                 </SelectTrigger>
@@ -89,11 +89,11 @@ export default function Header() {
 
               {/* Map Icon - Also clickable */}
               <div
-                className="shadow-xl hidden md:flex  rounded-r-2xl py-2 px-4 border  items-center border-black/20 cursor-pointer hover:bg-orange-50 transition-colors"
+                className="hidden md:flex  rounded-r-2xl py-2 px-4 border  items-center border-black/20 cursor-pointer hover:bg-orange-50 transition-colors"
                 onClick={handleLocationClick}
                 title="Klik untuk mengubah lokasi"
               >
-                <MapPin className="w-4 h-4 text-orange-500" />
+                <MapPin className="w-4 h-4 text-primary" />
               </div>
             </div>
           </div>
@@ -116,6 +116,7 @@ export default function Header() {
               onClick={handleAuthClick}
             >
               <Avatar className="w-8 lg:w-10 h-8 lg:h-10">
+                <AvatarImage src={session.user.image || '/placeholder.jpg'}/>
                 <AvatarFallback>{getInitialName(session.user.name as string)}</AvatarFallback>
               </Avatar>
               <div className="hidden sm:flex flex-col">

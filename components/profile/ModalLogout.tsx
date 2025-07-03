@@ -29,7 +29,7 @@ const LogoutModal = () => {
       {/* Modal Logout */}
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogTrigger asChild>
-          <Button onClick={() => setIsOpen(true)} className="bg-red-500 hover:bg-red-600 mt-20 mx-auto w-full">Keluar <LogOut /></Button>
+          <Button onClick={() => setIsOpen(true)} className="bg-red-500 w-full mt-5 hover:bg-red-600 mx-auto">Keluar <LogOut /></Button>
 
         </DialogTrigger>
 

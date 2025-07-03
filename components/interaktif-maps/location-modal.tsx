@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import React, { useState, useCallback, useEffect } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -10,6 +10,7 @@ import { MapPin, Navigation, Save, X } from 'lucide-react'
 import { useGeolocation } from "@/context/geolocation-context"
 import "mapbox-gl/dist/mapbox-gl.css"
 import { toast } from "sonner"
+import { Textarea } from "../ui/textarea"
 
 interface LocationModalProps {
   isOpen: boolean
@@ -17,13 +18,48 @@ interface LocationModalProps {
 }
 
 export default function LocationModal({ isOpen, onClose }: LocationModalProps) {
-  const { location, updateLocation } = useGeolocation()
+  const { location, updateLocation , address } = useGeolocation()
 
   const [tempLocation, setTempLocation] = useState<{ lat: number; lng: number } | null>(
     location ? { lat: location.latitude, lng: location.longitude } : null
   )
   const [isDragging, setIsDragging] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const mapRef = React.useRef<any>(null)
+    const [isRecentering, setIsRecentering] = useState(false)
+    console.log(isRecentering)
+
+  useEffect(() =>{
+    if(location){
+      setTempLocation({
+      lat: location?.latitude || -6.2088,
+      lng: location?.longitude || 106.84
+    })
+    recenterToUserLocation()
+    }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  },[location, isOpen])
+
+
+  const recenterToUserLocation = () => {
+    if (tempLocation && mapRef.current) {
+      setIsRecentering(true)
+
+      mapRef.current.flyTo({
+        center: [tempLocation.lng, tempLocation.lat],
+        zoom: 13,
+        duration: 1500,
+        essential: true,
+      })
+
+      // Reset button state after animation
+      setTimeout(() => {
+        setIsRecentering(false)
+      }, 1500)
+    }
+  }
 
   // Get current GPS location
   const getCurrentLocation = useCallback(() => {
@@ -37,7 +73,10 @@ export default function LocationModal({ isOpen, onClose }: LocationModalProps) {
             lng: position.coords.longitude,
           }
           setTempLocation(newLocation)
-          setIsLoading(false)
+          setTimeout(() =>{
+            recenterToUserLocation()
+            setIsLoading(false)
+          },1000)
         },
         (error) => {
           // Default to Jakarta if geolocation fails
@@ -154,6 +193,7 @@ export default function LocationModal({ isOpen, onClose }: LocationModalProps) {
           <div className="w-full h-[400px] rounded-lg overflow-hidden border">
             {tempLocation && (
               <Map
+               ref={mapRef}
                 mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN}
                 initialViewState={{
                   longitude: tempLocation.lng,
@@ -220,6 +260,15 @@ export default function LocationModal({ isOpen, onClose }: LocationModalProps) {
                     readOnly
                     className="bg-white"
                   />
+                </div>
+                <div className="col-span-2">
+                  <Label htmlFor="address">Alamat Tersimpan</Label>
+                  <Textarea
+                    id="address"
+                    value={address}
+                    readOnly
+                    className="bg-white"
+                  ></Textarea>
                 </div>
               </div>
 

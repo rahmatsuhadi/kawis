@@ -2,11 +2,11 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "../ui/button"
-import { Heart, MessageCircle, Send, Share2, Smile } from "lucide-react"
+import { Heart, Loader2, MessageCircle, Send, Share2, Smile } from "lucide-react"
 import { PostResponse } from "./Post"
 import { formatDistanceToNow } from "date-fns"
 import { id } from "date-fns/locale"
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import Image from "next/image"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useSession } from "next-auth/react"
@@ -15,6 +15,7 @@ import { Input } from "../ui/input"
 import { Comment, User } from "@prisma/client"
 import { Badge } from "../ui/badge"
 import EmojiPicker from "../ui/emoji-picker"
+import Link from "next/link"
 
 interface CommentPost extends Comment {
     user: User
@@ -129,9 +130,17 @@ export default function PostCard({ post }: { post: PostResponse }) {
             return response.json();
         },
         onSuccess: () => {
-            toast.success("Komentar Berhasil Dikirim!", { duration: 2000 });
+            // toast.success("Komentar Berhasil Dikirim!", { duration: 2000 });
             setNewCommentContent(""); // Reset input komentar
             queryClient.invalidateQueries({ queryKey: ["postComments", post.id] }); // Invalidasi cache komentar untuk post ini
+            setTimeout(() => {
+                if (commentsContainerRef.current) {
+                    commentsContainerRef.current.scrollTo({
+                        top: commentsContainerRef.current.scrollHeight,
+                        behavior: "smooth",
+                    })
+                }
+            }, 100)
         },
         onError: (error) => {
             toast.error("Gagal Mengirim Komentar", { description: error.message || "Terjadi kesalahan saat mengirim komentar." });
@@ -218,6 +227,24 @@ export default function PostCard({ post }: { post: PostResponse }) {
 
     const finalRenderedContent = { __html: truncatedContent };
 
+
+    const commentsContainerRef = useRef<HTMLDivElement>(null)
+
+    // Auto scroll to bottom when new comment is added
+    useEffect(() => {
+        if (commentsContainerRef.current && showComments) {
+            const scrollToBottom = () => {
+                commentsContainerRef.current?.scrollTo({
+                    top: commentsContainerRef.current.scrollHeight,
+                    behavior: "smooth",
+                })
+            }
+
+            // Small delay to ensure DOM is updated
+            setTimeout(scrollToBottom, 100)
+        }
+    }, [comments.length, showComments])
+
     return (
         <Card className="w-full  mx-auto bg-white border border-gray-200 shadow-sm">
             <CardContent className="p-0">
@@ -236,17 +263,16 @@ export default function PostCard({ post }: { post: PostResponse }) {
                                         ✓
                                     </Badge>
                                 )}
+                                {session?.user.id == post.user.id && (
+                                    <span className="text-sm text-gray-400">{`(Anda)`}</span>
+
+                                )}
                             </div>
                             <div className="flex items-center gap-1 text-xs text-gray-500">
                                 <span>@{post.user.username}</span>
                                 <span>•</span>
                                 <span>{formatTimeAgo(new Date(post.createdAt))}</span>
-                                {post.event.name && (
-                                    <>
-                                        <span>•</span>
-                                        <span>{post.event.name}</span>
-                                    </>
-                                )}
+
                             </div>
                         </div>
                     </div>
@@ -272,6 +298,15 @@ export default function PostCard({ post }: { post: PostResponse }) {
                         </button>
                     )}
 
+                    <div className="text-sm text-gray-500">
+                        {post.event.name && (
+                            <>
+                                <span>•</span>
+                                <span><Link className="hover:cursor-pointer" href={`/main/event/${post.eventId}`}>{post.event.name}</Link></span>
+                            </>
+                        )}
+                    </div>
+
                     {/* Tags */}
                     {/* {post.tags && post.tags.length > 0 && (
             <div className="flex flex-wrap gap-1 mt-2">
@@ -288,24 +323,33 @@ export default function PostCard({ post }: { post: PostResponse }) {
                 {post.images && post.images.length > 0 && (
                     <div className="relative">
                         {post.images.length === 1 ? (
-                            <div className="relative w-full h-80">
-                                <Image src={post.images[0].imageUrl || "/placeholder.jpg"} alt="Post image" fill className="object-cover" />
+                            <div className="relative w-full bg-gray-100 rounded-lg overflow-hidden" onDoubleClick={() => !isLikedByUser && handleToggleLike()}>
+                                <Image
+                                    src={post.images[0].imageUrl || "/placeholder.jpg"}
+                                    alt="Post image"
+                                    width={500}
+                                    height={400}
+                                    className="w-full h-auto max-h-96 object-contain"
+                                    style={{ minHeight: '200px' }}
+                                />
                             </div>
                         ) : (
-                            <div className="grid grid-cols-2 gap-1">
+                            <div className="grid grid-cols-2 gap-2">
                                 {post.images.slice(0, 4).map((image, index) => (
-                                    <div key={index} className="relative h-40">
-                                        <Image
-                                            src={image.imageUrl || "/placeholder.jpg"}
-                                            alt={`Post image ${index + 1}`}
-                                            fill
-                                            className="object-cover"
-                                        />
-                                        {index === 3 && post.images.length > 4 && (
-                                            <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                                                <span className="text-white font-semibold">+{post.images.length - 4}</span>
-                                            </div>
-                                        )}
+                                    <div key={index} className="relative bg-gray-100 rounded-lg overflow-hidden">
+                                        <div className="aspect-square relative">
+                                            <Image
+                                                src={image.imageUrl || "/placeholder.jpg"}
+                                                alt={`Post image ${index + 1}`}
+                                                fill
+                                                className="object-contain p-1"
+                                            />
+                                            {index === 3 && post.images.length > 4 && (
+                                                <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-lg">
+                                                    <span className="text-white font-semibold text-lg">+{post.images.length - 4}</span>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 ))}
                             </div>
@@ -323,11 +367,12 @@ export default function PostCard({ post }: { post: PostResponse }) {
                             <Button
                                 variant="ghost"
                                 size="sm"
+                                disabled={toggleLikeMutation.isPending}
                                 className={`p-0 h-auto ${isLikedByUser ? "text-red-500" : "text-gray-600"} hover:text-red-500`}
                                 onClick={handleToggleLike}
                             >
                                 <Heart className={`w-5 h-5 mr-1 ${isLikedByUser ? "fill-current" : ""}`} />
-                                <span className="text-sm">{post.likes}</span>
+                                {toggleLikeMutation.isPending ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <span className="text-sm">{post.likes}</span>}
                             </Button>
 
                             <Button
@@ -370,11 +415,12 @@ export default function PostCard({ post }: { post: PostResponse }) {
                 </div>
 
                 {/* Comments Section */}
+                {isLoadingComments && (<div className="flex items-center gap-2 justify-center mb-2"><Loader2 className="w-4 h-4 mr-1 animate-spin" /> <span className="text-sm">Memuat Komentar...</span></div>)}
                 {showComments && (
-                    <div className="border-t border-gray-100">
+                    <div className="border-t border-gray-100" >
                         {/* Existing Comments */}
                         {comments.length > 0 && (
-                            <div className="max-h-60 overflow-y-auto">
+                            <div className="max-h-60 overflow-y-auto" ref={commentsContainerRef}>
                                 {comments.map((comment) => (
                                     <div
                                         key={comment.id}
@@ -405,38 +451,42 @@ export default function PostCard({ post }: { post: PostResponse }) {
                         )}
 
                         {/* Add Comment */}
-                        <div className="flex items-center space-x-3 p-4">
-                            <Avatar className="w-8 h-8 flex-shrink-0">
-                                <AvatarImage src="/placeholder.jpg?height=32&width=32" alt="You" />
-                                <AvatarFallback>Y</AvatarFallback>
-                            </Avatar>
-                            <div className="flex-1 flex items-center space-x-2">
-                                <Input
-                                    placeholder="Tulis komentar..."
-                                    value={newCommentContent}
-                                    onChange={(e) => setNewCommentContent(e.target.value)}
-                                    onKeyPress={(e) => e.key === "Enter" && handlePostComment()}
-                                    className="flex-1 border-none bg-gray-50 focus:bg-white"
-                                />
-                                <EmojiPicker
-                                    trigger={
-                                        <Button size="sm" variant="ghost" className="p-2">
-                                            <Smile className="w-4 h-4 text-gray-500" />
-                                        </Button>
-                                    }
-                                    onEmojiSelect={(emoji) => setNewCommentContent(newCommentContent + emoji)}
-                                    compact={true}
-                                />
-                                <Button
-                                    size="sm"
-                                    onClick={handlePostComment}
-                                    disabled={!newCommentContent.trim()}
-                                    className="bg-blue-500 hover:bg-blue-600 text-white px-3"
-                                >
-                                    <Send className="w-4 h-4" />
-                                </Button>
+                        {session && (
+                            <div className="flex items-center space-x-3 p-4">
+                                <Avatar className="w-8 h-8 flex-shrink-0 border">
+                                    <AvatarImage src={session.user.image || "/placeholder.jpg?height=32&width=32"} alt="You" />
+                                    <AvatarFallback>Y</AvatarFallback>
+                                </Avatar>
+                                <div className="flex-1 flex items-center space-x-2">
+                                    <Input
+                                        disabled={createCommentMutation.isPending}
+                                        placeholder="Tulis komentar..."
+                                        value={newCommentContent}
+                                        onChange={(e) => setNewCommentContent(e.target.value)}
+                                        onKeyPress={(e) => e.key === "Enter" && handlePostComment()}
+                                        className="flex-1 border-none bg-gray-50 focus:bg-white"
+                                    />
+                                    <EmojiPicker
+                                        trigger={
+                                            <Button size="sm" variant="ghost" className="p-2">
+                                                <Smile className="w-4 h-4 text-gray-500" />
+                                            </Button>
+                                        }
+                                        onEmojiSelect={(emoji) => setNewCommentContent(newCommentContent + emoji)}
+                                        compact={true}
+                                    />
+                                    <Button
+                                        size="sm"
+                                        onClick={handlePostComment}
+                                        disabled={!newCommentContent.trim() || createCommentMutation.isPending}
+                                        className="bg-blue-500 hover:bg-blue-600 text-white px-3"
+                                    >
+                                        {createCommentMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="w-4 h-4" />}
+
+                                    </Button>
+                                </div>
                             </div>
-                        </div>
+                        )}
                     </div>
                 )}
             </CardContent>

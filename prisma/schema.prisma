@@ -17,6 +17,12 @@ enum UserRole {
   ADMIN
 }
 
+enum EventStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 model User {
   id            String    @id @default(cuid()) // Note: NextAuth often defaults to cuid() or uuid()
   fullName      String?   @unique @db.VarChar(255) // Username bisa nullable jika user hanya login via OAuth tanpa username
@@ -93,13 +99,13 @@ model Event {
   // Relasi ke EventCategory (tabel perantara)
   eventCategories EventCategory[]
   slug            String          @unique @db.VarChar(100)
+  status          EventStatus     @default(PENDING)
   startDate       DateTime
   endDate         DateTime
   latitude        Decimal         @db.Decimal(10, 8)
   longitude       Decimal         @db.Decimal(11, 8)
-  organizerName   String?          @db.VarChar(255)
+  organizerName   String?         @db.VarChar(255)
   anonymousName   String          @db.VarChar(255)
-  isApproved      Boolean         @default(false)
   createdAt       DateTime        @default(now())
   approvedBy      User?           @relation(fields: [approvedById], references: [id])
   approvedById    String?

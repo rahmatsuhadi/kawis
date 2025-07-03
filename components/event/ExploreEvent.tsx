@@ -29,7 +29,7 @@ export default function ExploreEvent() {
     } = useQuery<EventsApiResponse, Error>({ // Gunakan EventsApiResponse sebagai tipe data
         // queryKey: ["events",],
         enabled: !!location,
-        queryKey: ["events", location?.latitude, location?.longitude],
+        queryKey: ["events-nearby", location?.latitude, location?.longitude],
         queryFn: fetchEvents,
         refetchOnWindowFocus: true,
     });
@@ -57,6 +57,7 @@ export default function ExploreEvent() {
 
 
     return (
+        <div>
         <div className="lg:col-span-2">
             <Card>
                 <CardHeader>
@@ -129,6 +130,7 @@ export default function ExploreEvent() {
                     </Tabs>
                 </CardContent>
             </Card>
+        </div>
         </div>
     )
 }

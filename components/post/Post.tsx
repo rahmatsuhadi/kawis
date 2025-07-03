@@ -51,7 +51,7 @@ export default function Post() {
   const posts = data?.posts || [];
 
   return (
-    <div className="space-y-4 lg:space-y-6 overflow-y-auto max-w-2xl mx-auto mb-20">
+    <div className="space-y-4 lg:space-y-6 overflow-y-auto lg:max-w-2xl xl:max-w-4xl mx-auto mb-20">
       {isLoading
         ? Array.from({ length: 4 }).map((_, i) => <PostCardSkeleton key={i} />)
         : posts?.map((post) => <PostCard key={post.id} post={post} />)}

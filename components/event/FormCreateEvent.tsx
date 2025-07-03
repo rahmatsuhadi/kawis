@@ -108,7 +108,7 @@ export default function FormCreateEvent() {
       toast.success("Event Berhasil Dibuat!", {
         description: "Event Anda telah dikirim dan menunggu persetujuan admin.",
       });
-      queryClient.invalidateQueries({ queryKey: ["events"] });
+      queryClient.invalidateQueries({ queryKey: ["events", "events-nearby"] });
       // Reset form
       setEventName("");
       setDescription("");

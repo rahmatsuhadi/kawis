@@ -1,6 +1,6 @@
 "use client"
 
-import { Calendar, MapPin, ChevronRight } from "lucide-react"
+import { Calendar, MapPin, ChevronRight, Loader2 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
@@ -13,6 +13,7 @@ interface NearbyEventsCardProps {
   title?: string
   showViewAll?: boolean
   onViewAll?: () => void
+  isLoading: boolean
 }
 
 export default function NearbyEventsCard({
@@ -20,6 +21,7 @@ export default function NearbyEventsCard({
   maxEvents = 1,
   title = "Event Terdekat",
   showViewAll = true,
+  isLoading,
   onViewAll,
 }: NearbyEventsCardProps) {
   const router = useRouter()
@@ -32,7 +34,7 @@ export default function NearbyEventsCard({
       day: "2-digit",
       year: "numeric",
     }
-    return date.toLocaleDateString("en-US", options)
+    return date.toLocaleDateString("ID-id", options)
   }
 
   const formatDistance = (distance: number) => {
@@ -71,6 +73,7 @@ export default function NearbyEventsCard({
       </CardHeader>
 
       <CardContent className="space-y-3">
+
         {displayEvents.length > 0 ? (
           <>
             {/* Event List */}
@@ -142,6 +145,17 @@ export default function NearbyEventsCard({
               </div>
             )}
           </>
+        ) : isLoading ? (
+          <div className="flex items-center justify-center flex-col">
+            <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+              <Calendar className="w-6 h-6 text-gray-400" />
+            </div>
+            <div className="flex items-center gap-2 justify-center mb-2">
+              <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+              <span className="text-sm">Memuat Event...</span>
+            </div>
+          </div>
+          
         ) : (
           /* Empty State */
           <div className="text-center py-6">

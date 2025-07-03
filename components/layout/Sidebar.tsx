@@ -23,7 +23,7 @@ export default function Sidebar() {
         <Button
           asChild // Render sebagai children, bukan button HTML
           variant={isActive("/main") ? "default" : "ghost"} // Highlight jika aktif
-          className={`w-full justify-start ${isActive("/main") ? "bg-orange-500 hover:bg-orange-600 text-white" : "text-orange-500 hover:text-orange-600 hover:bg-orange-50"}`}
+          className={`w-full justify-start ${isActive("/main") ? "bg-primary hover:bg-orange-600 text-white" : "text-primary hover:text-orange-600 hover:bg-orange-50"}`}
         >
           <Link href="/main">
             <Home className="w-5 h-5 mr-3" />
@@ -35,7 +35,7 @@ export default function Sidebar() {
         <Button
           asChild
           variant={isActive("/maps") ? "default" : "ghost"}
-          className={`w-full justify-start ${isActive("/maps") ? "bg-orange-500 hover:bg-orange-600 text-white" : "text-orange-500 hover:text-orange-600 hover:bg-orange-50"}`}
+          className={`w-full justify-start ${isActive("/maps") ? "bg-primary hover:bg-orange-600 text-white" : "text-primary hover:text-orange-600 hover:bg-orange-50"}`}
         >
           <Link href="/main/maps">
             <MapPin className="w-5 h-5 mr-3" />
@@ -47,7 +47,7 @@ export default function Sidebar() {
         <Button
           asChild
           variant={isActive("/main/explore") ? "default" : "ghost"}
-          className={`w-full justify-start ${isActive("/main/explore") ? "bg-orange-500 hover:bg-orange-600 text-white" : "text-orange-500 hover:text-orange-600 hover:bg-orange-50"}`}
+          className={`w-full justify-start ${isActive("/main/explore") ? "bg-primary hover:bg-orange-600 text-white" : "text-primary hover:text-orange-600 hover:bg-orange-50"}`}
         >
           <Link href="/main/explore">
             <Search className="w-5 h-5 mr-3" />
@@ -60,7 +60,7 @@ export default function Sidebar() {
          <Button
           asChild
           variant={isActive("/main/event-create") ? "default" : "ghost"} // Asumsi halaman create event adalah /main/event-create
-          className={`w-full justify-start ${isActive("/main/event-create") ? "bg-orange-500 hover:bg-orange-600 text-white" : "text-orange-500 hover:text-orange-600 hover:bg-orange-50"}`}
+          className={`w-full justify-start ${isActive("/main/event-create") ? "bg-primary hover:bg-orange-600 text-white" : "text-primary hover:text-orange-600 hover:bg-orange-50"}`}
         >
           <Link href="/main/event-create">
             <Calendar className="w-5 h-5 mr-3" />
@@ -73,7 +73,7 @@ export default function Sidebar() {
         {/* <Button
           asChild
           variant={isActive("/posts/create") ? "default" : "ghost"} // Asumsi halaman create post adalah /posts/create
-          className={`w-full justify-start ${isActive("/posts/create") ? "bg-orange-500 hover:bg-orange-600 text-white" : "text-orange-500 hover:text-orange-600 hover:bg-orange-50"}`}
+          className={`w-full justify-start ${isActive("/posts/create") ? "bg-primary hover:bg-orange-600 text-white" : "text-primary hover:text-orange-600 hover:bg-orange-50"}`}
         >
           <Link href="/posts/create">
             <MessageCircle className="w-5 h-5 mr-3" />
@@ -85,7 +85,7 @@ export default function Sidebar() {
         {/* <Button
           asChild
           variant={isActive("/messages") ? "default" : "ghost"} // Asumsi halaman messages adalah /messages
-          className={`w-full justify-start ${isActive("/messages") ? "bg-orange-500 hover:bg-orange-600 text-white" : "text-orange-500 hover:text-orange-600 hover:bg-orange-50"}`}
+          className={`w-full justify-start ${isActive("/messages") ? "bg-primary hover:bg-orange-600 text-white" : "text-primary hover:text-orange-600 hover:bg-orange-50"}`}
         >
           <Link href="/messages">
             <MessageCircle className="w-5 h-5 mr-3" />
@@ -102,7 +102,7 @@ export default function Sidebar() {
             <Button
               asChild
               variant={isActive("/main/manage-event") ? "default" : "ghost"} // Asumsi halaman manage events adalah /main/events
-              className={`w-full justify-start ${isActive("/main/manage-event") ? "bg-orange-500 hover:bg-orange-600 text-white" : "text-orange-500 hover:text-orange-600 hover:bg-orange-50"}`}
+              className={`w-full justify-start ${isActive("/main/manage-event") ? "bg-primary hover:bg-orange-600 text-white" : "text-primary hover:text-orange-600 hover:bg-orange-50"}`}
             >
               <Link href="/main/manage-event">
                 <Shield className="w-5 h-5 mr-3" />
@@ -114,7 +114,7 @@ export default function Sidebar() {
             <Button
               asChild
               variant={isActive("/main/manage-user") ? "default" : "ghost"} // Asumsi halaman manage users adalah /main/users
-              className={`w-full justify-start ${isActive("/main/manage-user") ? "bg-orange-500 hover:bg-orange-600 text-white" : "text-orange-500 hover:text-orange-600 hover:bg-orange-50"}`}
+              className={`w-full justify-start ${isActive("/main/manage-user") ? "bg-primary hover:bg-orange-600 text-white" : "text-primary hover:text-orange-600 hover:bg-orange-50"}`}
             >
               <Link href="/main/manage-user">
                 <Users className="w-5 h-5 mr-3" />

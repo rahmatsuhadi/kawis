@@ -61,7 +61,7 @@ export default function LocationRadar() {
     data,
   } = useQuery<EventsApiResponse, Error>({ // Gunakan EventsApiResponse sebagai tipe data
     enabled: !!userLocation,
-    queryKey: ["events", userLocation?.latitude, userLocation?.longitude, radarRadius],
+    queryKey: ["events-nearby", userLocation?.latitude, userLocation?.longitude, radarRadius],
     queryFn: fetchEvents,
     staleTime: 1000 * 60,
     refetchOnWindowFocus: true,
@@ -156,10 +156,10 @@ export default function LocationRadar() {
 
       {/* Instructions & Information */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-6xl mx-auto">
-        <div className="w-full justify-center">
-          <div className="relative flex justify-center">
+        {/* <div className="w-full justify-center"> */}
+          <div className="relative flex justify-center ">
             {/* Map container with circular clip */}
-            <div className="lg:w-[500px] w-80 h-80 lg:h-[500px] rounded-full overflow-hidden bg-white shadow-2xl border-orange-500 border-4 relative">
+            <div className="w-96 h-96 overflow-hidden bg-white shadow-2xl border-orange-500 border-4 relative">
               {userLocation && (
                 <Map
                   ref={mapRef}
@@ -229,10 +229,10 @@ export default function LocationRadar() {
               </div>
             </div>
           </div>
-        </div>
+        {/* </div> */}
 
         {/* Location list */}
-        <Card className="mt-6 w-full max-w-md">
+        <Card className="w-full max-w-md lg:hidden block ">
           <CardContent className="pt-6">
             <h3 className="font-semibold mb-3 text-center">Lokasi Terdeteksi</h3>
             <div className="space-y-2">

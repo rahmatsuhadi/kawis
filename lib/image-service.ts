@@ -2,17 +2,25 @@
 import { supabase } from '@/lib/supabase'; // Pastikan Anda sudah punya file ini
 // import { toast } from 'sonner'; // Untuk notifikasi
 
-const SUPABASE_BUCKET_NAME = 'kawis-kita'; // Ganti dengan nama bucket Supabase Anda
-
+export const SUPABASE_BUCKET_NAME = 'kawis-kita'; // Ganti dengan nama bucket Supabase Anda
+const PROFILE_FOLDER_NAME = 'global'
 /**
  * Mengunggah file gambar ke Supabase Storage.
  * @param file Objek File yang akan diunggah.
  * @returns Promise yang mengembalikan URL publik gambar atau melempar Error.
  */
-export async function uploadImage(file: File): Promise<string> {
-  const fileName = `${Date.now()}-${file.name.replace(/\s/g, '_')}`; // Nama file unik
-  const filePath = `${fileName}`; // Path di bucket (misal: "nama-file.jpg")
 
+
+
+export async function uploadImage(file: File, folderName: string = PROFILE_FOLDER_NAME): Promise<string> {
+  const randomString = Math.random().toString(36).substring(2, 8); 
+  
+  // Ekstrak ekstensi file (misalnya .jpg, .png)
+  const fileExtension = file.name.split('.').pop();
+
+  // const fileName = `${Date.now()}-${file.name.replace(/\s/g, '_')}`; // Nama file unik
+  const fileName = `${Date.now()}-${randomString}.${fileExtension}`; // Nama file unik
+  const filePath = `${folderName}/${fileName}`; // <-- Format path: folder/nama-file.jpg
   try {
     const { data, error } = await supabase.storage
       .from(SUPABASE_BUCKET_NAME)

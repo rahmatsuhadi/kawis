@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
 import { EventResponse } from "./EventList"
+import { formatDate, formatDistance, formatTime, truncateText } from "@/lib/formater"
+import PaginationEvent from "./Pagination"
 
 interface EventListSimpleProps {
   events: EventResponse[]
@@ -26,36 +28,6 @@ export default function EventListSimple({
 }: EventListSimpleProps) {
   const router = useRouter()
 
-  const formatDate = (dateString: string | Date) => {
-    const date = new Date(dateString)
-    const options: Intl.DateTimeFormatOptions = {
-      weekday: "short",
-      month: "short",
-      day: "2-digit",
-      year: "numeric",
-    }
-    return date.toLocaleDateString("en-US", options)
-  }
-
-  const formatTime = (dateString: string | Date) => {
-    const date = new Date(dateString)
-    return date.toLocaleTimeString("id-ID", {
-      hour: "2-digit",
-      minute: "2-digit",
-    })
-  }
-
-  const formatDistance = (distance: number) => {
-    if (distance < 1) {
-      return `${Math.round(distance * 1000)}m`
-    }
-    return `${distance.toFixed(1)} km`
-  }
-
-  const truncateText = (text: string, maxLength: number) => {
-    if (text.length <= maxLength) return text
-    return text.substring(0, maxLength) + "..."
-  }
 
   const getEventStatus = (startDate: string | Date, endDate: string | Date) => {
     const now = new Date()
@@ -76,6 +48,7 @@ export default function EventListSimple({
 
   if (layout === "horizontal") {
     return (
+      <>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
         {events.map((event) => {
           const eventStatus = getEventStatus(event.startDate, event.endDate)
@@ -116,7 +89,7 @@ export default function EventListSimple({
 
                   <div className="flex items-center gap-1 text-xs text-gray-600">
                     <Clock className="w-3 h-3 text-blue-500" />
-                    <span>{formatTime(event.startDate)}</span>
+                    <span>{formatTime(event.startDate) + " - " + formatTime(event.endDate)}</span>
                   </div>
 
                   <div className="flex items-center gap-1 text-xs text-gray-600">
@@ -145,6 +118,9 @@ export default function EventListSimple({
         </div>
         )}
       </div>
+      
+        <PaginationEvent/>
+      </>
     )
   }
 
@@ -197,7 +173,8 @@ export default function EventListSimple({
                       <span>{formatDate(event.startDate)}</span>
                       <span className="text-gray-400">•</span>
                       <Clock className="w-3 h-3 text-blue-500" />
-                      <span>{formatTime(event.startDate)}</span>
+                      
+                    <span>{formatTime(event.startDate) + " - " + formatTime(event.endDate)}</span>
                     </div>
 
                     <div className="flex items-center gap-1 text-xs text-gray-600">

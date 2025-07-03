@@ -33,7 +33,7 @@ export async function POST(req: Request) {
 
         // 4. Periksa apakah Event yang dituju ada dan sudah disetujui
         const existingEvent = await prisma.event.findUnique({
-            where: { id: eventId, isApproved: true }, // Pastikan event sudah disetujui
+            where: { id: eventId, status:"APPROVED" }, // Pastikan event sudah disetujui
         });
 
         if (!existingEvent) {

@@ -16,7 +16,7 @@ export async function fetchEvents(context: QueryFunctionContext): Promise<Events
 
   console.log(radius)
   // Perbaiki URL untuk menyertakan query parameters
-  let url = `/api/events`;
+  let url = `/api/events/nearby`;
 
   url += `?lat=${lat}&lng=${lng}&sort=distance`;
 
@@ -60,7 +60,7 @@ export default function EventList() {
   } = useQuery<EventsApiResponse, Error>({ // Gunakan EventsApiResponse sebagai tipe data
     // queryKey: ["events",],
     enabled: !!location,
-    queryKey: ["events", location?.latitude, location?.longitude, radius],
+    queryKey: ["events-nearby", location?.latitude, location?.longitude, radius],
     queryFn: fetchEvents,
     refetchOnWindowFocus: true,
   });
@@ -71,7 +71,7 @@ export default function EventList() {
       <NearbyEventsCard
         maxEvents={3}
         events={events}
-
+        isLoading={isLoading || !data}
         title="Event Terdekat"
         showViewAll={true}
         onViewAll={() => console.log("View all clicked")}

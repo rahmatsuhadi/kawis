@@ -1,9 +1,8 @@
 // app/api/events/route.ts
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth"; // Untuk memeriksa sesi user
-import { PrismaClient } from "@prisma/client";
+import { EventStatus, PrismaClient } from "@prisma/client";
 import { authOptions } from "@/auth";
-import { calculateDistance } from "@/lib/calculate-distance";
 
 const prisma = new PrismaClient();
 
@@ -70,7 +69,7 @@ export async function POST(req: Request) {
         // Atau, jika anonymousName hanya untuk event anonim, bisa dihilangkan di sini atau dikosongkan.
         // Untuk saat ini, kita asumsikan anonymousName tetap bisa dikirim
         anonymousName: !!session ? session.user.name : anonymousName, // Fallback jika anonim tidak diisi
-        isApproved: !!session, // Event yang baru dibuat selalu perlu diapprove admin
+        status: "PENDING",
         // Jika Anda ingin event yang dibuat ADMIN langsung approved, tambahkan logika di sini
         // approvedById: (session.user.role === "ADMIN") ? session.user.id : null,        
         // Handle multiple images
@@ -86,13 +85,15 @@ export async function POST(req: Request) {
       },
       include: {
         eventCategories: { // Sertakan kategori dalam respons
-          include: { category: {
-            select: {
-              id: true,
-              name: true,
-              slug: true,
+          include: {
+            category: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+              }
             }
-          } }, // Sertakan detail kategori
+          }, // Sertakan detail kategori
         },
         images: true, // Sertakan data gambar yang baru dibuat dalam respons
       },
@@ -100,7 +101,7 @@ export async function POST(req: Request) {
 
     // 5. Kirim respons sukses
     return NextResponse.json(
-      { message: !!session ?  "Event created successfully!" : "Event created successfully and awaiting admin approval" , event: newEvent },
+      { message: !!session ? "Event created successfully!" : "Event created successfully and awaiting admin approval", event: newEvent },
       { status: 201 }
     );
   } catch (error) {
@@ -114,51 +115,18 @@ export async function POST(req: Request) {
   }
 }
 
-
-
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
-    const status = searchParams.get("status"); // 'approved', 'pending'
     const limit = parseInt(searchParams.get("limit") || "10", 10);
     const offset = parseInt(searchParams.get("offset") || "0", 10);
 
-    // Get location parameters
-    const userLatParam = searchParams.get("lat");
-    const userLngParam = searchParams.get("lng");
-    const radiusKmParam = searchParams.get("radius"); // Radius in KM (now truly optional)
-
-    // Validate and parse required latitude and longitude if provided for filtering
-    const hasLocationParams = userLatParam && userLngParam;
-    let userLat: number | null = null;
-    let userLng: number | null = null;
-    let radiusKm: number | null = null; // Can be null if not provided
-
-    if (hasLocationParams) {
-        userLat = parseFloat(userLatParam);
-        userLng = parseFloat(userLngParam);
-        radiusKm = radiusKmParam ? parseFloat(radiusKmParam) : null; // If radius is not provided, it's null
-
-        if (isNaN(userLat) || isNaN(userLng) || (radiusKm !== null && (isNaN(radiusKm) || radiusKm <= 0))) {
-            return NextResponse.json(
-                { message: "Invalid latitude, longitude, or radius value." },
-                { status: 400 }
-            );
-        }
-    }
-
-
-    const whereClause: { isApproved?: boolean } = {};
+    const whereClause: { status?: EventStatus } = {};
     const session = await getServerSession(authOptions);
 
     // Filtering logic based on 'status'
-    if (status === "pending") {
-      if (!session || session.user?.role !== "ADMIN") {
-        return NextResponse.json({ message: "Forbidden: Not authorized to view pending events" }, { status: 403 });
-      }
-      whereClause.isApproved = false;
-    } else {
-      whereClause.isApproved = true; // Default: Only show approved events
+    if (!session || session.user?.role !== "ADMIN") {
+      return NextResponse.json({ message: "Not authorized to view events" }, { status: 403 });
     }
 
     // Fetch all events that match the `isApproved` status.
@@ -178,49 +146,36 @@ export async function GET(req: Request) {
       },
     });
 
-    let finalEvents = allMatchingEvents;
 
-    // Apply distance filtering ONLY IF all location parameters (lat, lng, and valid radius) are provided
-    if (userLat !== null && userLng !== null && radiusKm !== null) {
-      const eventsWithDistance = allMatchingEvents.map(event => {
-        let distance = null;
-        if (event.latitude !== null && event.longitude !== null) {
-          distance = calculateDistance(userLat, userLng, Number(event.latitude), Number(event.longitude));
-        }
-        return { ...event, distanceKm: distance };
-      });
-
-      finalEvents = eventsWithDistance.filter(event => {
-        return event.distanceKm !== null && event.distanceKm <= radiusKm;
-      });
-    } else {
-        // If no full location params, but lat/lng were passed, still calculate and return distance
-        // but don't filter by radius.
-        if (userLat !== null && userLng !== null) {
-             finalEvents = allMatchingEvents.map(event => {
-                let distance = null;
-                if (event.latitude !== null && event.longitude !== null) {
-                  distance = calculateDistance(userLat, userLng, Number(event.latitude), Number(event.longitude));
-                }
-                return { ...event, distanceKm: distance }; // Add distanceKm even if not filtering
-            });
-        } else {
-            // If no lat/lng at all, distanceKm will be null for all events
-            finalEvents = allMatchingEvents.map(event => ({ ...event, distanceKm: null }));
-        }
-    }
-    
     // Total count AFTER potential distance filtering
-    const totalFilteredEvents = finalEvents.length; 
+    const totalFilteredEvents = allMatchingEvents.length;
 
     // Apply pagination (limit and offset) after all other filtering
-    const paginatedEvents = finalEvents.slice(offset, offset + limit);
+    const paginatedEvents = allMatchingEvents.slice(offset, offset + limit);
 
-    // Map categories into the event object for easier frontend consumption
-    const eventsForResponse = paginatedEvents.map(event => ({
+    // const now = new Date();
+
+    const eventsForResponse = paginatedEvents.map(event => {
+      // const startDate = new Date(event.startDate);
+      // const endDate = new Date(event.endDate);
+
+      // let status: "coming" | "ongoing" | "ended" = "coming";
+
+      // if (now < startDate) {
+      //   status = "coming";
+      // } else if (now >= startDate && now <= endDate) {
+      //   status = "ongoing";
+      // } else if (now > endDate) {
+      //   status = "ended";
+      // }
+
+      return {
         ...event,
-        categories: event.eventCategories.map(ec => ec.category)
-    }));
+        categories: event.eventCategories.map(ec => ec.category),
+        // status, // <= Tambahkan status di sini
+      };
+    });
+
 
     return NextResponse.json({ events: eventsForResponse, total: totalFilteredEvents });
 
@@ -234,3 +189,4 @@ export async function GET(req: Request) {
     await prisma.$disconnect();
   }
 }
+
