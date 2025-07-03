@@ -8,6 +8,7 @@ import { Toaster } from "@/components/ui/sonner"
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth";
 import { SessionProvider } from "@/providers/next-auth";
+import Head from "next/head";
 
 const poppins = Poppins({
   weight: ["300", "400", "500", "600", "700"],
@@ -26,6 +27,7 @@ const poppins = Poppins({
 
 export const metadata: Metadata = {
   title: "Kawis-Kita",
+  
   description: "Interaktif Maps Event management",
 };
 
@@ -38,6 +40,9 @@ export default async function RootLayout({
   const session = await getServerSession(authOptions);
   return (
     <html lang="en">
+      <Head>
+        <link rel="icon" href="/brand.svg" />
+      </Head>
       <body
         className={`${poppins.className} antialiased`}
       >
