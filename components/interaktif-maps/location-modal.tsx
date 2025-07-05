@@ -38,7 +38,7 @@ export default function LocationModal({ isOpen, onClose }: LocationModalProps) {
     })
     recenterToUserLocation()
     }
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   },[location, isOpen])
 
 
@@ -98,6 +98,7 @@ export default function LocationModal({ isOpen, onClose }: LocationModalProps) {
       setTempLocation(defaultLocation)
       setIsLoading(false)
     }
+     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Handle marker drag
