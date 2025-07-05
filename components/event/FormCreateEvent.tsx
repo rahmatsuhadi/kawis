@@ -18,6 +18,8 @@ import GeolocationMap from "../interaktif-maps/LocationMapInput";
 import { Category } from "@prisma/client";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { MultiSelect } from "../ui/multi-select";
+import Editor from "../ui/rich-text/Editor";
+import { useRouter } from "next/navigation";
 
 
 export default function FormCreateEvent() {
@@ -34,14 +36,14 @@ export default function FormCreateEvent() {
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false); // State untuk menunjukkan proses upload gambar
 
-   // ✨ NEW: Time states
+  // ✨ NEW: Time states
   const [startTime, setStartTime] = useState("09:00")
   const [endTime, setEndTime] = useState("17:00")
 
   // Inisialisasi QueryClient untuk invalidasi cache
   const queryClient = useQueryClient();
 
-   // ✨ NEW: Generate time options
+  // ✨ NEW: Generate time options
   const generateTimeOptions = () => {
     const times = []
     for (let hour = 0; hour < 24; hour++) {
@@ -76,7 +78,7 @@ export default function FormCreateEvent() {
     label: cat.name,
   }));
 
-
+  const router = useRouter()
   // useMutation untuk mengirim data event ke API
   const createEventMutation = useMutation({
     mutationFn: async (newEventData: {
@@ -122,6 +124,7 @@ export default function FormCreateEvent() {
       setUploadedImageUrls([]);
       setAnonymousName("");
       setSelectedCategoryIds([]);
+      router.replace("/main")
     },
     onError: (error) => {
       toast.error("Gagal Membuat Event", {
@@ -209,7 +212,7 @@ export default function FormCreateEvent() {
     setCoordinates({ lat, lng })
   }
 
-  
+
   // ✨ NEW: Combine date and time function
   const combineDateAndTime = (date: Date, time: string): Date => {
     const [hours, minutes] = time.split(":").map(Number)
@@ -258,7 +261,7 @@ export default function FormCreateEvent() {
     // ✨ NEW: Combine date and time for API
     const startDateTime = combineDateAndTime(startDate, startTime)
     const endDateTime = combineDateAndTime(endDate, endTime)
-
+    
     const eventData = {
       name: eventName,
       description: description,
@@ -276,7 +279,6 @@ export default function FormCreateEvent() {
   };
 
   const isFormDisabled = createEventMutation.isPending || isUploading || isLoadingCategories;
-
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
       {/* Event Form */}
@@ -288,6 +290,7 @@ export default function FormCreateEvent() {
             <Label htmlFor="eventName" className="text-sm lg:text-base font-medium">
               Nama Event <span className="text-red-500">*</span>
             </Label>
+            <button onClick={() =>setDescription("")} type="button">sadasd</button>
             <Input
               id="eventName"
               placeholder="Nama Event"
@@ -303,14 +306,16 @@ export default function FormCreateEvent() {
             <Label htmlFor="description" className="text-sm lg:text-base font-medium">
               Description <span className="text-red-500">*</span>
             </Label>
-            <Textarea
+
+            <Editor placeholder="Masukan Description" disabled={isFormDisabled} content={description} onChange={(e) => setDescription(e)} />
+            {/* <Textarea
               id="description"
               placeholder="Masukan Description"
               value={description}
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setDescription(e.target.value)}
               className="min-h-20 lg:min-h-24 border-orange-200 focus:border-orange-500"
               disabled={isFormDisabled}
-            />
+            /> */}
           </div>
 
           {/* Address */}

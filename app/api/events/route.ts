@@ -68,7 +68,7 @@ export async function POST(req: Request) {
         // Jika event selalu dibuat oleh user login, anonymousName bisa diisi dari username/fullName user
         // Atau, jika anonymousName hanya untuk event anonim, bisa dihilangkan di sini atau dikosongkan.
         // Untuk saat ini, kita asumsikan anonymousName tetap bisa dikirim
-        anonymousName: !!session ? session.user.name : anonymousName, // Fallback jika anonim tidak diisi
+        anonymousName: anonymousName || session?.user.fullName || "Anonymous", // Fallback jika anonim tidak diisi
         status: "PENDING",
         // Jika Anda ingin event yang dibuat ADMIN langsung approved, tambahkan logika di sini
         // approvedById: (session.user.role === "ADMIN") ? session.user.id : null,        

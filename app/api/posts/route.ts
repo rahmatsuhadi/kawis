@@ -125,6 +125,8 @@ export async function GET(req: Request) {
 
     const totalEvents = await prisma.event.count({
       where: whereClause,
+      take: limit,
+      skip: offset,
     });
 
     return NextResponse.json({ posts, total: totalEvents });

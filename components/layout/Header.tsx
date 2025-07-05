@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { useSession } from "next-auth/react"
 import Image from "next/image"
 import getInitialName from "@/lib/getInitialName"
-import { useState } from "react"
+import {  useState } from "react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
 import { useGeolocation } from "@/context/geolocation-context"
 import { useRouter } from "next/navigation"
@@ -15,14 +15,16 @@ import { Button } from "../ui/button"
 
 export default function Header() {
   const { data: session, status, } = useSession()
+  
+  
+  const { address, setRadius, radius,location } = useGeolocation()
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false)
-
-
-  const { address, setRadius, radius } = useGeolocation()
   const router = useRouter()
   const handleLocationClick = () => {
     setIsLocationModalOpen(true)
   }
+
+
 
   const handleAuthClick = () => {
     if (session) {

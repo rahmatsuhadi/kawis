@@ -11,20 +11,20 @@ interface EditorProps {
   onChange(text: string): void
   placeholder?: string
   className?: string
+  disabled?: boolean
 }
 
- const Editor = ({ content, onChange, placeholder }: EditorProps) => {
+const Editor = ({ content, onChange, disabled, placeholder }: EditorProps) => {
   const editor = useEditor({
     extensions: [
       StarterKit,
-
       Placeholder.configure({
-  placeholder,
-  emptyNodeClass:
-    'first:before:text-gray-400 first:before:float-left first:before:content-[attr(data-placeholder)] first:before:pointer-events-none',
-}),
+        placeholder,
+        emptyNodeClass:
+          'first:before:text-gray-400 first:before:float-left first:before:content-[attr(data-placeholder)] first:before:pointer-events-none',
+      }),
     ],
-    content,
+    content: content.trim() === "" ? null : content, // <== Ini bagian penting
     immediatelyRender: false,
     editorProps: {
       attributes: {
@@ -33,14 +33,22 @@ interface EditorProps {
       },
     },
     onUpdate: ({ editor }) => {
-      onChange(editor.getHTML())
+      const html = editor.getHTML()
+      onChange(html)      
     },
   })
+
+
+  // useEffect(() => {
+  //   if (content == "") {
+  //     editor?.destroy()
+  //   }
+  // }), [content]
 
   return (
     <div className="space-y-2 prose-sm prose-ol:list-decimal prose-ul:list-disc">
       <Toolbar editor={editor} />
-      <EditorContent editor={editor} />
+      <EditorContent editor={editor} disabled={disabled} />
     </div>
   )
 }

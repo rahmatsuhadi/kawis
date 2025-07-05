@@ -1,8 +1,10 @@
 "use client"
 
 import PostCard from "./PostCard"
-import { useQuery } from "@tanstack/react-query";
+import { QueryFunctionContext, useInfiniteQuery } from "@tanstack/react-query";
 import { EventPost, EventPostImage, User } from "@prisma/client";
+import { Button } from "../ui/button";
+import { Loader2 } from "lucide-react";
 
 export interface PostResponse extends EventPost {
   images: EventPostImage[]
@@ -18,13 +20,18 @@ interface PostsApiResponse {
   total: number; // Total jumlah event
 }
 
+export const POSTS_PER_PAGE = 4; 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+async function fetchPosts(context: QueryFunctionContext ):Promise<PostsApiResponse> {
+   const [_key, currentStatus, pageNum, limit] =  context.queryKey;
 
-async function fetchPosts() {
-  //  const [_key, currentStatus, pageNum, limit] = queryKey;
+   const pageParam = context.pageParam
   // const offset = (Number(pageNum) - 1) * Number(limit);
 
+  let url = `/api/posts?limit=${POSTS_PER_PAGE}&offset=${pageParam}`;
+
   // Perbaiki URL untuk menyertakan query parameters
-  const url = `/api/posts`;
+  // const url = `/api/posts`;
 
   const response = await fetch(url);
   if (!response.ok) {
@@ -38,23 +45,66 @@ async function fetchPosts() {
 
 export default function Post() {
 
-
-
-
   const {
     data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
     isLoading,
-  } = useQuery<PostsApiResponse, Error>({ // Gunakan EventsApiResponse sebagai tipe data
+    isError,
+    error,
+  } = useInfiniteQuery<PostsApiResponse, Error>({ // Gunakan EventsApiResponse sebagai tipe data
     queryKey: ["posts",],
     queryFn: fetchPosts,
+    initialPageParam: 0,
+
+    // `getNextPageParam` akan tetap bekerja dengan baik karena ia hanya melihat panjang `posts`
+    // dari `lastPage`
+    getNextPageParam: (lastPage, allPages) => {
+      if (lastPage.posts.length < 4) {
+        return undefined; // Tidak ada lagi halaman jika jumlah post kurang dari yang diharapkan
+      }
+      return allPages.length * 4; // Offset untuk halaman berikutnya
+    },
+    refetchOnWindowFocus: true,
+    
   });
-  const posts = data?.posts || [];
+  const posts = data?.pages.flatMap((page) => page.posts) || [];
 
   return (
     <div className="space-y-4 lg:space-y-6 overflow-y-auto lg:max-w-2xl xl:max-w-4xl mx-auto mb-20">
-      {isLoading
-        ? Array.from({ length: 4 }).map((_, i) => <PostCardSkeleton key={i} />)
-        : posts?.map((post) => <PostCard key={post.id} post={post} />)}
+      {isLoading ? (
+        Array.from({ length: 4 }).map((_, i) => <PostCardSkeleton key={i} />)
+      ) : posts.length === 0 ? (
+        <div className="text-center p-4 text-gray-500">No posts found.</div>
+      ) : (
+        posts.map((post) => <PostCard key={post.id} post={post} />)
+      )}
+
+      {/* Load More Button */}
+      {/* Tombol akan muncul hanya jika hasNextPage true */}
+      {hasNextPage && (
+        <div className="flex justify-center mt-8">
+          <Button
+            onClick={() => fetchNextPage()}
+            disabled={isFetchingNextPage}
+            className="bg-orange-500 hover:bg-orange-600"
+          >
+            {isFetchingNextPage ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Loading more...
+              </>
+            ) : (
+              "Load More Posts"
+            )}
+          </Button>
+        </div>
+      )}
+
+      {/* Pesan opsional saat semua post dimuat */}
+      {!hasNextPage && posts.length > 0 && (
+        <div className="text-center text-gray-500 mt-8">You've reached the end of the posts!</div>
+      )}
     </div>
   )
 

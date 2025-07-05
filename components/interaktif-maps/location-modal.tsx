@@ -29,7 +29,6 @@ export default function LocationModal({ isOpen, onClose }: LocationModalProps) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const mapRef = React.useRef<any>(null)
     const [isRecentering, setIsRecentering] = useState(false)
-    console.log(isRecentering)
 
   useEffect(() =>{
     if(location){
@@ -57,7 +56,7 @@ export default function LocationModal({ isOpen, onClose }: LocationModalProps) {
       // Reset button state after animation
       setTimeout(() => {
         setIsRecentering(false)
-      }, 1500)
+      }, 4500)
     }
   }
 
@@ -166,7 +165,7 @@ export default function LocationModal({ isOpen, onClose }: LocationModalProps) {
               className="bg-orange-500 hover:bg-orange-600"
             >
               <Navigation className="h-4 w-4 mr-2" />
-              {isLoading ? "Mencari..." : "Gunakan GPS"}
+              {isLoading || isRecentering ? "Mencari..." : "Gunakan GPS"}
             </Button>
 
             <Button

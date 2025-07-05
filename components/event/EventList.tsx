@@ -14,7 +14,6 @@ export async function fetchEvents(context: QueryFunctionContext): Promise<Events
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_key, lat, lng, radius] = context.queryKey as [string, number?, number?, number?]
 
-  console.log(radius)
   // Perbaiki URL untuk menyertakan query parameters
   let url = `/api/events/nearby`;
 

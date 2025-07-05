@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { MapPin, Clock, User, CalendarDays } from "lucide-react"
+import { Clock, User, CalendarDays } from "lucide-react"
 import EventImageDetail from "@/components/event/CardEventImage"
 import { Metadata } from "next"
 import { Event, EventImage } from "@prisma/client"
@@ -83,9 +83,8 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
                             <CardContent className="p-4 lg:p-6">
                                 <h1 className="text-2xl lg:text-3xl font-bold mb-4 lg:mb-6">{event.name}</h1>
 
-                                <p className="text-gray-700 leading-relaxed mb-6 lg:mb-8 text-sm lg:text-base">
-                                    {event.description}
-                                </p>
+
+                                <div className="text-gray-700 leading-relaxed mb-6 lg:mb-8 text-sm lg:text-base" dangerouslySetInnerHTML={{ __html: event.description || '' }}></div>
 
                                 <Separator className="my-4 lg:my-6" />
 
@@ -157,15 +156,15 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
                                     {/* Asumsi Anda punya kolom 'address' di event, atau gunakan description jika tidak */}
                                     <p className="font-medium text-sm lg:text-base">{event.address || 'Alamat tidak tersedia'}</p>
                                 </div>
-                                <Button variant="outline" className="w-full mt-4 border-orange-500 text-orange-500 hover:bg-orange-50 text-sm lg:text-base">
+                                {/* <Button variant="outline" className="w-full mt-4 border-orange-500 text-orange-500 hover:bg-orange-50 text-sm lg:text-base">
                                     <MapPin className="w-4 h-4 mr-2" />
                                     Lihat di Maps
-                                </Button>
+                                </Button> */}
                             </CardContent>
                         </Card>
 
                         {/* Event Stats (Dummy Data) */}
-                        <Card>
+                        {/* <Card>
                             <CardContent className="p-4 lg:p-6">
                                 <h3 className="text-base lg:text-lg font-semibold mb-4">Statistik Event</h3>
                                 <div className="space-y-3 lg:space-y-4">
@@ -192,7 +191,7 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
                                     </Button>
                                 </div>
                             </CardContent>
-                        </Card>
+                        </Card> */}
                     </div>
                 </div>
 
@@ -203,7 +202,8 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
                         {event.posts.map((post) => (
                             <Card key={post.id} className="p-4">
                                 <CardContent>
-                                    <p className="text-gray-800 mb-2">{post.content}</p>
+                                    <div className="" dangerouslySetInnerHTML={{ __html: post.content || '' }}></div>
+                                    {/* <p className="text-gray-800 mb-2">{}</p> */}
                                     {post.images && post.images.length > 0 && (
                                         <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 mt-2">
                                             {post.images.map((postImg) => (
@@ -214,7 +214,7 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
                                         </div>
                                     )}
                                     <p className="text-sm text-gray-500 mt-2">
-                                        Dibuat oleh: {post.postedByName || 'Anonim'} pada {format(new Date(post.createdAt), "dd MMM yyyy HH:mm", { locale: id })}
+                                        {post.postedByName || 'Anonim'} pada {format(new Date(post.createdAt), "dd MMM yyyy HH:mm", { locale: id })}
                                     </p>
                                 </CardContent>
                             </Card>
