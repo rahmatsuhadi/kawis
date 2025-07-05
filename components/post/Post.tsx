@@ -23,12 +23,12 @@ interface PostsApiResponse {
 export const POSTS_PER_PAGE = 4; 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function fetchPosts(context: QueryFunctionContext ):Promise<PostsApiResponse> {
-   const [_key, currentStatus, pageNum, limit] =  context.queryKey;
+  //  const [_key] =  context.queryKey;
 
    const pageParam = context.pageParam
   // const offset = (Number(pageNum) - 1) * Number(limit);
 
-  let url = `/api/posts?limit=${POSTS_PER_PAGE}&offset=${pageParam}`;
+  const url = `/api/posts?limit=${POSTS_PER_PAGE}&offset=${pageParam}`;
 
   // Perbaiki URL untuk menyertakan query parameters
   // const url = `/api/posts`;
@@ -51,8 +51,8 @@ export default function Post() {
     hasNextPage,
     isFetchingNextPage,
     isLoading,
-    isError,
-    error,
+    // isError,
+    // error,
   } = useInfiniteQuery<PostsApiResponse, Error>({ // Gunakan EventsApiResponse sebagai tipe data
     queryKey: ["posts",],
     queryFn: fetchPosts,
@@ -76,7 +76,7 @@ export default function Post() {
       {isLoading ? (
         Array.from({ length: 4 }).map((_, i) => <PostCardSkeleton key={i} />)
       ) : posts.length === 0 ? (
-        <div className="text-center p-4 text-gray-500">No posts found.</div>
+        <div className="text-center p-4 text-gray-500">Postingan tidak ditemukan.</div>
       ) : (
         posts.map((post) => <PostCard key={post.id} post={post} />)
       )}
@@ -92,7 +92,7 @@ export default function Post() {
           >
             {isFetchingNextPage ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Loading more...
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Memuat lebih banyak data...
               </>
             ) : (
               "Load More Posts"
@@ -103,7 +103,7 @@ export default function Post() {
 
       {/* Pesan opsional saat semua post dimuat */}
       {!hasNextPage && posts.length > 0 && (
-        <div className="text-center text-gray-500 mt-8">You've reached the end of the posts!</div>
+        <div className="text-center text-gray-500 mt-8">Anda telah pada akhir postingan.</div>
       )}
     </div>
   )
