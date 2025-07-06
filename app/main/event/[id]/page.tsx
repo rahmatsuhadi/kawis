@@ -1,10 +1,8 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
-import { MapPin, Clock, User, CalendarDays, ArrowLeft, Heart, Bookmark, Instagram, Link2, Facebook } from "lucide-react"
-import EventImageDetail from "@/components/event/CardEventImage"
+import { MapPin, CalendarDays, ArrowLeft, } from "lucide-react"
 import { Metadata } from "next"
-import { Event, EventCategory, EventImage } from "@prisma/client"
+import { Event, EventImage } from "@prisma/client"
 
 import { format } from "date-fns"
 import { id } from "date-fns/locale"
