@@ -36,9 +36,19 @@ export default function EventImageDetail({ images }: { images: EventImage[] }) {
             ) : (
                 // Jika hanya ada satu gambar atau tidak ada gambar sama sekali
                 images && images.length === 1 && (
-                    <div className="lg:col-span-2 flex items-center justify-center">
-                        <p className="text-gray-500">Tidak ada gambar tambahan untuk event ini.</p>
+                   <div className="mb-6 lg:mb-8">
+                    <Card className="overflow-hidden">
+                    <div className="relative w-full h-64 lg:h-96">
+                        <Image
+                        src={images[0].imageUrl || "/placeholder.svg?height=400&width=800"}
+                        alt="Event Image"
+                        fill
+                        style={{ objectFit: "cover" }}
+                        className="rounded-lg"
+                        />
                     </div>
+                    </Card>
+                </div>
                 )
             )}
 
