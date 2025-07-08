@@ -40,7 +40,8 @@ model User {
   sessions Session[] // Menghubungkan user dengan sesi mereka
 
   // Relasi custom aplikasi Anda:
-  approvedEvents Event[]
+  approvedEvents Event[] @relation("ApprovedEvents")
+  events Event[] @relation("CreatedEvents")
   eventPosts     EventPost[]
   comments       Comment[] // <--- TAMBAHKAN INI: Komentar yang dibuat oleh user ini
   postLikes      PostLike[] // <--- TAMBAHKAN INI: Likes yang diberikan oleh user ini
@@ -107,8 +108,10 @@ model Event {
   organizerName   String?         @db.VarChar(255)
   anonymousName   String          @db.VarChar(255)
   createdAt       DateTime        @default(now())
-  approvedBy      User?           @relation(fields: [approvedById], references: [id])
+  approvedBy      User?           @relation("ApprovedEvents", fields: [approvedById], references: [id])
+  createdBy       User?           @relation("CreatedEvents", fields: [createdById], references: [id])
   approvedById    String?
+  createdById     String?
 
   images EventImage[] // Relasi One-to-Many ke EventImage
   posts  EventPost[]

@@ -25,7 +25,7 @@ export default function LocationModal({ isOpen, onClose }: LocationModalProps) {
   )
   const [isDragging, setIsDragging] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-
+  
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const mapRef = React.useRef<any>(null)
     const [isRecentering, setIsRecentering] = useState(false)
