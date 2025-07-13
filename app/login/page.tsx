@@ -1,8 +1,15 @@
 import Image from "next/image";
 import LoginForm from "@/components/login/LoginForm";
+import { getServerSession } from "next-auth";
+import { redirect } from "next/navigation";
 
-export default function Login() {
+export default async function Login() {
 
+  const session  = await getServerSession();
+
+  if(!!session){
+    redirect("/main")
+  }
 
   return (
     <div className="min-h-screen flex flex-col lg:flex-row">

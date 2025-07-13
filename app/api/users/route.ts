@@ -50,9 +50,9 @@ export async function GET(req: Request) {
         });
 
         const totalFiltereduser = await prisma.user.count({
-            take: limit,
-            skip: offset,
-            where: whereClause,
+            // take: limit,
+            // skip: offset,
+            // where: whereClause,
         })
 
         return NextResponse.json({ users: allUsers, total: totalFiltereduser });

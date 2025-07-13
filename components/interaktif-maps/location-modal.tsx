@@ -9,7 +9,6 @@ import Map, { Marker } from "react-map-gl/mapbox"
 import { MapPin, Navigation, Save, X } from 'lucide-react'
 import { useGeolocation } from "@/context/geolocation-context"
 import "mapbox-gl/dist/mapbox-gl.css"
-import { toast } from "sonner"
 import { Textarea } from "../ui/textarea"
 
 interface LocationModalProps {
@@ -18,28 +17,28 @@ interface LocationModalProps {
 }
 
 export default function LocationModal({ isOpen, onClose }: LocationModalProps) {
-  const { location, updateLocation , address } = useGeolocation()
+  const { location, updateLocation, getGeolocation, address,isLoadingLocation } = useGeolocation()
 
   const [tempLocation, setTempLocation] = useState<{ lat: number; lng: number } | null>(
     location ? { lat: location.latitude, lng: location.longitude } : null
   )
   const [isDragging, setIsDragging] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const mapRef = React.useRef<any>(null)
-    const [isRecentering, setIsRecentering] = useState(false)
+  // const [isLoading, setIsLoading] = useState(false)
 
-  useEffect(() =>{
-    if(location){
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const mapRef = React.useRef<any>(null)
+  const [isRecentering, setIsRecentering] = useState(false)
+
+  useEffect(() => {
+    if (location) {
       setTempLocation({
-      lat: location?.latitude || -6.2088,
-      lng: location?.longitude || 106.84
-    })
-    recenterToUserLocation()
+        lat: location?.latitude || -6.2088,
+        lng: location?.longitude || 106.84
+      })
+      recenterToUserLocation()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  },[location, isOpen])
+  }, [location, isOpen])
 
 
   const recenterToUserLocation = () => {
@@ -60,49 +59,9 @@ export default function LocationModal({ isOpen, onClose }: LocationModalProps) {
     }
   }
 
-  // Get current GPS location
-  const getCurrentLocation = useCallback(() => {
-    setIsLoading(true)
-
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const newLocation = {
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-          }
-          setTempLocation(newLocation)
-          setTimeout(() =>{
-            recenterToUserLocation()
-            setIsLoading(false)
-          },1000)
-        },
-        (error) => {
-          // Default to Jakarta if geolocation fails
-          console.log(error.message)
-          const defaultLocation = { lat: -6.2088, lng: 106.8456 }
-          toast.error("Gagal dalam mengambil lokasi saat ini. ")
-          setTempLocation(defaultLocation)
-          setIsLoading(false)
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 60000,
-        }
-      )
-    } else {
-      // Default to Jakarta if geolocation not supported
-      const defaultLocation = { lat: -6.2088, lng: 106.8456 }
-      toast.error("Lokasi anda tidak diaktifkan atau perangkat anda tidak support.")
-      setTempLocation(defaultLocation)
-      setIsLoading(false)
-    }
-     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
 
   // Handle marker drag
-  const handleMarkerDrag = useCallback((event: {lngLat: {lat: number, lng: number}}) => {
+  const handleMarkerDrag = useCallback((event: { lngLat: { lat: number, lng: number } }) => {
     const newLocation = {
       lat: event.lngLat.lat,
       lng: event.lngLat.lng,
@@ -111,7 +70,7 @@ export default function LocationModal({ isOpen, onClose }: LocationModalProps) {
   }, [])
 
   // Handle marker drag end
-  const handleMarkerDragEnd = useCallback((event:  {lngLat: {lat: number, lng: number}}) => {
+  const handleMarkerDragEnd = useCallback((event: { lngLat: { lat: number, lng: number } }) => {
     setIsDragging(false)
     const newLocation = {
       lat: event.lngLat.lat,
@@ -133,7 +92,7 @@ export default function LocationModal({ isOpen, onClose }: LocationModalProps) {
     if (location) {
       setTempLocation({ lat: location.latitude, lng: location.longitude })
     } else {
-      getCurrentLocation()
+      getGeolocation()
     }
   }
 
@@ -160,13 +119,13 @@ export default function LocationModal({ isOpen, onClose }: LocationModalProps) {
           {/* Controls */}
           <div className="flex gap-2 flex-wrap">
             <Button
-              onClick={getCurrentLocation}
-              disabled={isLoading}
+              onClick={() =>getGeolocation()}
+              // disabled={isLoading}
               size="sm"
               className="bg-orange-500 hover:bg-orange-600"
             >
               <Navigation className="h-4 w-4 mr-2" />
-              {isLoading || isRecentering ? "Mencari..." : "Gunakan GPS"}
+              {isLoadingLocation || isRecentering ? "Mencari..." : "Gunakan GPS"}
             </Button>
 
             <Button
@@ -193,7 +152,7 @@ export default function LocationModal({ isOpen, onClose }: LocationModalProps) {
           <div className="w-full h-[400px] rounded-lg overflow-hidden border">
             {tempLocation && (
               <Map
-               ref={mapRef}
+                ref={mapRef}
                 mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN}
                 initialViewState={{
                   longitude: tempLocation.lng,

@@ -2,8 +2,7 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "../ui/button"
-import { Heart, Loader2, MessageCircle, Send, Share2, Smile } from "lucide-react"
-import { PostResponse } from "./Post"
+import { Heart, Loader2, MessageCircle, Send, Smile } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import { id } from "date-fns/locale"
 import { useEffect, useRef, useState } from "react"
@@ -16,15 +15,17 @@ import { Comment, User } from "@prisma/client"
 import { Badge } from "../ui/badge"
 import EmojiPicker from "../ui/emoji-picker"
 import Link from "next/link"
+import { PostResponse } from "@/app/main/page"
+import { PostDetailModal } from "./DetailModal"
 
-interface CommentPost extends Comment {
+export interface CommentPost extends Comment {
     user: User
 }
 
-interface CommentApiResponse { // Ubah nama agar lebih jelas
+export interface CommentApiResponse { // Ubah nama agar lebih jelas
     comments: CommentPost[];
 }
-interface LikeStatusApiResponse { // Tipe respons dari API status like
+export interface LikeStatusApiResponse { // Tipe respons dari API status like
     isLiked: boolean;
 }
 
@@ -46,42 +47,19 @@ const formatTimeAgo = (dateString: Date) => {
 }
 
 
-export default function PostCard({ post }: { post: PostResponse }) {
+export default function PostCard({ post, index:i }: {index:number, post: PostResponse }) {
 
     const queryClient = useQueryClient(); // Untuk invalidasi dan update cache
     const { data: session } = useSession(); // Status sesi user
     const [isExpanded, setIsExpanded] = useState(false); // Untuk expand/collapse deskripsi
     const [showComments, setShowComments] = useState(false); // Untuk menampilkan/menyembunyikan komentar
     const [newCommentContent, setNewCommentContent] = useState(""); // State untuk input komentar baru
-
+    const [isModalOpen, setIsModalOpen] = useState(false);
     const maxLength = 200; // Jumlah karakter sebelum dipotong
 
+    const isLikedByUser = post.postLike ? !!post.postLike.find(like => like.userId === session?.user?.id) : false || false; // Status like oleh user saat ini
 
-    // --- React Query untuk Mengecek Status Like User ---
-    const { data: likeStatus } = useQuery<LikeStatusApiResponse, Error>({
-        queryKey: ["postLikeStatus", post.id, session?.user?.id], // Kunci unik, bergantung pada post.id dan user.id
-        queryFn: async ({ queryKey }) => {
-            // eslint-disable-next-line  @typescript-eslint/no-unused-vars
-            const [_key, postId, userId] = queryKey;
-            if (!userId) return { isLiked: false }; // Jika user tidak login, anggap belum like
-
-            // Panggil API untuk cek status like
-            const res = await fetch(`/api/posts/${postId}/like?userId=${userId}`);
-            if (!res.ok) {
-                // Jika 404 (misal: belum like), anggap belum like
-                if (res.status === 404) return { isLiked: false };
-                const errData = await res.json();
-                throw new Error(errData.message || "Gagal memeriksa status like.");
-            }
-            return res.json();
-        },
-        // enabled: sessionStatus === "authenticated", // Query hanya dijalankan jika user login
-        staleTime: 1000 * 60 * 5, // Data dianggap "stale" setelah 5 menit
-    });
-
-    const isLikedByUser = likeStatus?.isLiked || false; // Status like oleh user saat ini
-
-
+    
     // --- React Query untuk Mengambil Komentar ---
     const {
         data: commentsData,
@@ -107,7 +85,7 @@ export default function PostCard({ post }: { post: PostResponse }) {
 
     const comments = commentsData?.comments || [];
     // Komentar terakhir untuk ditampilkan saat list komentar disembunyikan
-    // const latestComment = comments.length > 0 ? comments[comments.length - 1] : null;
+    const latestComment = comments.length > 0 ? comments[comments.length - 1] : null;
 
     // const timeAgo = formatDistanceToNow(new Date(post.createdAt), {
     //     addSuffix: true,
@@ -246,18 +224,20 @@ export default function PostCard({ post }: { post: PostResponse }) {
     }, [comments.length, showComments])
 
     return (
-        <Card className="w-full  mx-auto bg-white border border-gray-200 shadow-sm">
+        <Card className="w-full  mx-auto bg-white  border-gray-200 shadow-lg border hover:shadow-xl transition-all duration-300 animate-slideUp" 
+
+            style={{ animationDelay: `${i * 0.1}s` }}>
             <CardContent className="p-0">
                 {/* Post Header */}
-                <div className="flex items-center justify-between p-4 pb-3">
+                <div className="flex items-center justify-between p-4 pb-3 " >
                     <div className="flex items-center space-x-3">
                         <Avatar className="w-10 h-10">
-                            <AvatarImage src={post.user.image || "/placeholder.jpg"} alt={String(post.user.fullName)} />
-                            <AvatarFallback>{String(post.user.fullName).charAt(0)}</AvatarFallback>
+                            <AvatarImage src={post.user.image || "/placeholder.jpg"} alt={String(post.user.name)} />
+                            <AvatarFallback>{String(post.user.name).charAt(0)}</AvatarFallback>
                         </Avatar>
                         <div className="flex flex-col">
                             <div className="flex items-center gap-1">
-                                <span className="font-semibold text-sm">{post.user.fullName}</span>
+                                <span className="font-semibold text-sm">{post.user.name}</span>
                                 {post.user.emailVerified && (
                                     <Badge variant="secondary" className="w-4 h-4 p-0 bg-blue-500 text-white">
                                         ✓
@@ -280,7 +260,7 @@ export default function PostCard({ post }: { post: PostResponse }) {
                 </div>
 
                 {/* Post Content */}
-                <div className="px-4 pb-3">
+                <div className="px-4 pb-3" onClick={() => setIsModalOpen(true)}>
                     {/* Post Description */}
                     <div className="text-gray-700 mb-2 text-sm lg:text-base">
                         {/* Menggunakan dangerouslySetInnerHTML untuk merender konten HTML */}
@@ -321,41 +301,57 @@ export default function PostCard({ post }: { post: PostResponse }) {
 
                 {/* Post Images */}
                 {post.images && post.images.length > 0 && (
-                    <div className="relative">
+                    <div className="mb-4 rounded-lg overflow-hidden relative"> {/* Main container for images */}
                         {post.images.length === 1 ? (
-                            <div className="relative w-full bg-gray-100 rounded-lg overflow-hidden" onDoubleClick={() => !isLikedByUser && handleToggleLike()}>
+                            // --- Display for a Single Image ---
+                            <div
+                                className="relative w-full h-80 lg:h-96 bg-gray-100 rounded-lg overflow-hidden cursor-pointer" // Fixed height for single image
+                                onDoubleClick={() => !isLikedByUser && handleToggleLike()} // Double-click to like
+                            >
                                 <Image
-                                    src={post.images[0].imageUrl || "/placeholder.jpg"}
-                                    alt="Post image"
-                                    width={500}
-                                    height={400}
-                                    className="w-full h-auto max-h-96 object-contain"
-                                    style={{ minHeight: '200px' }}
+                                    src={post.images[0] || "/placeholder.jpg"}
+                                    alt={`Post image for ${post.event.name}`} // Improved alt text
+                                    layout="fill" // Fill the parent div
+                                    objectFit="cover" // Cover the area, cropping if needed
+                                    className="transition-transform duration-300 ease-in-out hover:scale-105" // Subtle hover effect
                                 />
+                                {/* Optional: Heart icon on double click */}
                             </div>
                         ) : (
-                            <div className="grid grid-cols-2 gap-2">
+                            // --- Display for Multiple Images (Grid Layout) ---
+                            // Show up to 4 images in a grid
+                            <div className="grid grid-cols-2 gap-2 h-96 lg:h-[500px]"> {/* Fixed height for the grid container */}
                                 {post.images.slice(0, 4).map((image, index) => (
-                                    <div key={index} className="relative bg-gray-100 rounded-lg overflow-hidden">
-                                        <div className="aspect-square relative">
-                                            <Image
-                                                src={image.imageUrl || "/placeholder.jpg"}
-                                                alt={`Post image ${index + 1}`}
-                                                fill
-                                                className="object-contain p-1"
-                                            />
-                                            {index === 3 && post.images.length > 4 && (
-                                                <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-lg">
-                                                    <span className="text-white font-semibold text-lg">+{post.images.length - 4}</span>
-                                                </div>
-                                            )}
-                                        </div>
+                                    <div
+                                        key={image || index} // Use image.id if available, fallback to index
+                                        className={`
+                                        relative bg-gray-100 rounded-lg overflow-hidden cursor-pointer
+                                        ${post.images.length === 2 ? 'col-span-1' : ''} /* Adjust layout for 2 images */
+                                        ${post.images.length === 3 && index === 0 ? 'col-span-2' : ''} /* Adjust layout for 3 images */
+                                    `}
+                                        onDoubleClick={() => !isLikedByUser && handleToggleLike()} // Double-click to like on grid images too
+                                    >
+                                        <Image
+                                            src={image || "/placeholder.jpg"}
+                                            alt={`Post image ${index + 1} for ${post.event.name}`} // Improved alt text
+                                            layout="fill"
+                                            objectFit="cover" // Cover the area
+                                            className="transition-transform duration-300 ease-in-out hover:scale-105" // Subtle hover effect
+                                        />
+                                        {/* Overlay for "more images" count */}
+                                        {index === 3 && post.images.length > 4 && (
+                                            <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center rounded-lg">
+                                                <span className="text-white font-semibold text-2xl">+{post.images.length - 4}</span>
+                                            </div>
+                                        )}
                                     </div>
                                 ))}
                             </div>
                         )}
                     </div>
                 )}
+
+
 
                 {/* Post Actions */}
                 <div className="px-4 py-3">
@@ -386,10 +382,10 @@ export default function PostCard({ post }: { post: PostResponse }) {
                                 <span className="text-sm">{comments.length > 0 ? `${comments.length} Komentar` : "Komentar"}</span>
                             </Button>
 
-                            <Button variant="ghost" size="sm" className="p-0 h-auto text-gray-600 hover:text-green-500">
+                            {/* <Button variant="ghost" size="sm" className="p-0 h-auto text-gray-600 hover:text-green-500">
                                 <Share2 className="w-5 h-5 mr-1" />
                                 <span className="text-sm">{formatNumber(1)}</span>
-                            </Button>
+                            </Button> */}
                         </div>
 
                         {/* Emoji Picker */}
@@ -416,8 +412,8 @@ export default function PostCard({ post }: { post: PostResponse }) {
 
                 {/* Comments Section */}
                 {isLoadingComments && (<div className="flex items-center gap-2 justify-center mb-2"><Loader2 className="w-4 h-4 mr-1 animate-spin" /> <span className="text-sm">Memuat Komentar...</span></div>)}
-                {showComments && (
-                    <div className="border-t border-gray-100" >
+                {showComments ? (
+                    <div className="border-t border-gray-100 animate-slideDown" >
                         {/* Existing Comments */}
                         {comments.length > 0 && (
                             <div className="max-h-60 overflow-y-auto" ref={commentsContainerRef}>
@@ -427,13 +423,13 @@ export default function PostCard({ post }: { post: PostResponse }) {
                                         className="flex items-start space-x-3 px-4 py-3 border-b border-gray-50 last:border-b-0"
                                     >
                                         <Avatar className="w-8 h-8 flex-shrink-0">
-                                            <AvatarImage src={comment.user.image || "/placeholder.jpg"} alt={String(comment.user.fullName)} />
-                                            <AvatarFallback>{String(comment.user.fullName).charAt(0)}</AvatarFallback>
+                                            <AvatarImage src={comment.user.image || "/placeholder.jpg"} alt={String(comment.user.name)} />
+                                            <AvatarFallback>{String(comment.user.name).charAt(0)}</AvatarFallback>
                                         </Avatar>
                                         <div className="flex-1 min-w-0">
                                             <div className="bg-gray-50 rounded-lg px-3 py-2">
                                                 <div className="flex items-center gap-1 mb-1">
-                                                    <span className="font-semibold text-sm">{comment.user.fullName}</span>
+                                                    <span className="font-semibold text-sm">{comment.user.name}</span>
                                                     <span className="text-xs text-gray-500">@{comment.user.username}</span>
                                                 </div>
 
@@ -442,7 +438,7 @@ export default function PostCard({ post }: { post: PostResponse }) {
                                             <div className="flex items-center gap-4 mt-1 text-xs text-gray-500">
                                                 <span>{formatTimeAgo(comment.createdAt)}</span>
 
-                                                <button className="hover:text-blue-500">Balas</button>
+                                                {/* <button className="hover:text-blue-500">Balas</button> */}
                                             </div>
                                         </div>
                                     </div>
@@ -488,8 +484,38 @@ export default function PostCard({ post }: { post: PostResponse }) {
                             </div>
                         )}
                     </div>
+                ) : latestComment && (
+                    <div
+                        className="flex items-start space-x-3 px-4 py-3 border-b border-gray-50 last:border-b-0"
+                    >
+                        <Avatar className="w-8 h-8 flex-shrink-0">
+                            <AvatarImage src={latestComment.user.image || "/placeholder.jpg"} alt={String(latestComment.user.name)} />
+                            <AvatarFallback>{String(latestComment.user.name).charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                            <div className="bg-gray-50 rounded-lg px-3 py-2">
+                                <div className="flex items-center gap-1 mb-1">
+                                    <span className="font-semibold text-sm">{latestComment.user.name}</span>
+                                    <span className="text-xs text-gray-500">@{latestComment.user.username}</span>
+                                </div>
+
+                                <p className="text-sm text-gray-800">{latestComment.content}</p>
+                            </div>
+                            <div className="flex items-center gap-4 mt-1 text-xs text-gray-500">
+                                <span>{formatTimeAgo(latestComment.createdAt)}</span>
+
+                                {/* <button className="hover:text-blue-500">Balas</button> */}
+                            </div>
+                        </div>
+                    </div>
                 )}
+                <PostDetailModal
+                    isOpen={isModalOpen}
+                    onOpenChange={setIsModalOpen}
+                    initialPost={post} // Pass the post data that triggered the modal
+                />
             </CardContent>
+
         </Card>
     )
 
@@ -503,10 +529,10 @@ export default function PostCard({ post }: { post: PostResponse }) {
     //                 <div className="flex items-center space-x-3 ">
     //                     <Avatar className="w-8 lg:w-16 h-8 lg:h-16 ">
     //                         {/* <AvatarImage src={post.user.image || "/placeholder.jpg?height=40&width=40"} /> */}
-    //                         <AvatarFallback>{getInitialName(String(post.user.fullName))}</AvatarFallback>
+    //                         <AvatarFallback>{getInitialName(String(post.user.name))}</AvatarFallback>
     //                     </Avatar>
     //                     <div>
-    //                         <h3 className="font-semibold text-sm lg:text-base">{post.user.fullName || post.user.username}</h3>
+    //                         <h3 className="font-semibold text-sm lg:text-base">{post.user.name || post.user.username}</h3>
     //                         <p className="text-xs lg:text-sm text-gray-500">{timeAgo}</p>
     //                         <div className=" text-orange-700 flex gap-1 items-center mt-2">
     //                             <MapPin size={15}/>
@@ -612,10 +638,10 @@ export default function PostCard({ post }: { post: PostResponse }) {
     //                             <div key={comment.id} className="flex space-x-3">
     //                                 <Avatar className="w-6 lg:w-8 h-6 lg:h-8">
     //                                     <AvatarImage src={comment.user.image || "/placeholder.jpg"} />
-    //                                     <AvatarFallback>{getInitialName(String(comment.user.fullName))}</AvatarFallback>
+    //                                     <AvatarFallback>{getInitialName(String(comment.user.name))}</AvatarFallback>
     //                                 </Avatar>
     //                                 <div className="flex-1 bg-gray-100 rounded-lg p-2">
-    //                                     <p className="font-semibold text-xs lg:text-sm">{comment.user.fullName || comment.user.username}</p>
+    //                                     <p className="font-semibold text-xs lg:text-sm">{comment.user.name || comment.user.username}</p>
     //                                     <p className="text-xs lg:text-sm text-gray-600">{comment.content}</p>
     //                                     <p className="text-right text-xs text-gray-500 mt-1">{formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true, locale: id })}</p>
     //                                 </div>
@@ -628,10 +654,10 @@ export default function PostCard({ post }: { post: PostResponse }) {
     //                         <div className="flex space-x-3 border-t pt-3">
     //                             <Avatar className="w-6 lg:w-8 h-6 lg:h-8">
     //                                 <AvatarImage src={latestComment.user.image || "/placeholder.jpg"} />
-    //                                 <AvatarFallback>{getInitialName(String(latestComment.user.fullName))}</AvatarFallback>
+    //                                 <AvatarFallback>{getInitialName(String(latestComment.user.name))}</AvatarFallback>
     //                             </Avatar>
     //                             <div className="flex-1 bg-gray-100 rounded-lg p-2">
-    //                                 <p className="font-semibold text-xs lg:text-sm">{latestComment.user.fullName || latestComment.user.username}</p>
+    //                                 <p className="font-semibold text-xs lg:text-sm">{latestComment.user.name || latestComment.user.username}</p>
     //                                 <p className="text-xs lg:text-sm text-gray-600">{latestComment.content}</p>
     //                                 <p className="text-right text-xs text-gray-500 mt-1">{formatDistanceToNow(new Date(latestComment.createdAt), { addSuffix: true, locale: id })}</p>
     //                             </div>

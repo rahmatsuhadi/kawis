@@ -17,29 +17,41 @@ export default function Sidebar() {
   const isAdmin = status === "authenticated" && session?.user?.role === "ADMIN";
 
   return (
-    <aside className="hidden lg:block max-w-80 bg-white border-r border-gray-200 h-screen overflow-y-auto">
+   <aside className="hidden lg:block max-w-80 bg-white border-r border-gray-200 h-screen overflow-y-auto shadow-lg transition-all duration-300 ease-in-out">
       <nav className="p-4 space-y-2">
         {/* Home */}
         <Button
           asChild // Render sebagai children, bukan button HTML
           variant={isActive("/main") ? "default" : "ghost"} // Highlight jika aktif
-          className={`w-full justify-start ${isActive("/main") ? "bg-primary hover:bg-orange-600 text-white" : "text-primary hover:text-orange-600 hover:bg-orange-50"}`}
+          className={`
+            w-full justify-start rounded-lg px-4 py-2 transition-all duration-200 ease-in-out
+            ${isActive("/main")
+              ? "bg-primary text-white shadow-md transform scale-[1.02] hover:bg-primary-dark" // bg-primary dan hover yang lebih gelap
+              : "text-primary hover:text-primary-dark hover:bg-primary-50 active:bg-primary-100" // text-primary dan hover/active yang lebih terang
+            }
+          `}
         >
-          <Link href="/main">
-            <Home className="w-5 h-5 mr-3" />
-            Home
+          <Link href="/main" className="flex items-center w-full h-full"> {/* Pastikan Link meliputi seluruh area tombol */}
+            <Home className="w-5 h-5 mr-3 shrink-0" />
+            <span className="truncate">Home</span>
           </Link>
         </Button>
 
         {/* Interaktif Maps */}
         <Button
           asChild
-          variant={isActive("/maps") ? "default" : "ghost"}
-          className={`w-full justify-start ${isActive("/maps") ? "bg-primary hover:bg-orange-600 text-white" : "text-primary hover:text-orange-600 hover:bg-orange-50"}`}
+          variant={isActive("/main/maps") ? "default" : "ghost"}
+          className={`
+            w-full justify-start rounded-lg px-4 py-2 transition-all duration-200 ease-in-out
+            ${isActive("/main/maps")
+              ? "bg-primary text-white shadow-md transform scale-[1.02] hover:bg-primary-dark"
+              : "text-primary hover:text-primary-dark hover:bg-primary-50 active:bg-primary-100"
+            }
+          `}
         >
-          <Link href="/main/maps">
-            <MapPin className="w-5 h-5 mr-3" />
-            Interaktif Maps
+          <Link href="/main/maps" className="flex items-center w-full h-full">
+            <MapPin className="w-5 h-5 mr-3 shrink-0" />
+            <span className="truncate">Interactive Maps</span>
           </Link>
         </Button>
 
@@ -47,78 +59,78 @@ export default function Sidebar() {
         <Button
           asChild
           variant={isActive("/main/explore") ? "default" : "ghost"}
-          className={`w-full justify-start ${isActive("/main/explore") ? "bg-primary hover:bg-orange-600 text-white" : "text-primary hover:text-orange-600 hover:bg-orange-50"}`}
+          className={`
+            w-full justify-start rounded-lg px-4 py-2 transition-all duration-200 ease-in-out
+            ${isActive("/main/explore")
+              ? "bg-primary text-white shadow-md transform scale-[1.02] hover:bg-primary-dark"
+              : "text-primary hover:text-primary-dark hover:bg-primary-50 active:bg-primary-100"
+            }
+          `}
         >
-          <Link href="/main/explore">
-            <Search className="w-5 h-5 mr-3" />
-            Explore
+          <Link href="/main/explore" className="flex items-center w-full h-full">
+            <Search className="w-5 h-5 mr-3 shrink-0" />
+            <span className="truncate">Explore</span>
           </Link>
         </Button>
 
-        {/* Post Event */}
-       {session && (
-         <Button
-          asChild
-          variant={isActive("/main/event-create") ? "default" : "ghost"} // Asumsi halaman create event adalah /main/event-create
-          className={`w-full justify-start ${isActive("/main/event-create") ? "bg-primary hover:bg-orange-600 text-white" : "text-primary hover:text-orange-600 hover:bg-orange-50"}`}
-        >
-          <Link href="/main/event-create">
-            <Calendar className="w-5 h-5 mr-3" />
-            Post Event
-          </Link>
-        </Button>
-       )}
+        {/* Post Event - Hanya terlihat jika ada sesi */}
+        {session && (
+          <Button
+            asChild
+            variant={isActive("/main/event-create") ? "default" : "ghost"}
+            className={`
+              w-full justify-start rounded-lg px-4 py-2 transition-all duration-200 ease-in-out
+              ${isActive("/main/event-create")
+                ? "bg-primary text-white shadow-md transform scale-[1.02] hover:bg-primary-dark"
+                : "text-primary hover:text-primary-dark hover:bg-primary-50 active:bg-primary-100"
+              }
+            `}
+          >
+            <Link href="/main/event-create" className="flex items-center w-full h-full">
+              <Calendar className="w-5 h-5 mr-3 shrink-0" />
+              <span className="truncate">Post Event</span>
+            </Link>
+          </Button>
+        )}
 
-        {/* Create Post */}
-        {/* <Button
-          asChild
-          variant={isActive("/posts/create") ? "default" : "ghost"} // Asumsi halaman create post adalah /posts/create
-          className={`w-full justify-start ${isActive("/posts/create") ? "bg-primary hover:bg-orange-600 text-white" : "text-primary hover:text-orange-600 hover:bg-orange-50"}`}
-        >
-          <Link href="/posts/create">
-            <MessageCircle className="w-5 h-5 mr-3" />
-            Create Post
-          </Link>
-        </Button> */}
-
-        {/* Message */}
-        {/* <Button
-          asChild
-          variant={isActive("/messages") ? "default" : "ghost"} // Asumsi halaman messages adalah /messages
-          className={`w-full justify-start ${isActive("/messages") ? "bg-primary hover:bg-orange-600 text-white" : "text-primary hover:text-orange-600 hover:bg-orange-50"}`}
-        >
-          <Link href="/messages">
-            <MessageCircle className="w-5 h-5 mr-3" />
-            Message
-          </Link>
-        </Button> */}
-
-        {/* Admin Only Menu - Conditional Rendering berdasarkan peran admin */}
+        {/* Admin Only Menu */}
         {isAdmin && (
-          <div className="pt-4 border-t border-gray-200">
-            <p className="text-xs font-medium text-gray-500 mb-2 px-3">ADMIN PANEL</p>
+          <div className="pt-4 border-t border-gray-200 mt-4">
+            <p className="text-xs font-medium text-gray-500 mb-2 px-3 uppercase tracking-wider">ADMIN PANEL</p> 
             
             {/* Manage Events */}
             <Button
               asChild
-              variant={isActive("/main/manage-event") ? "default" : "ghost"} // Asumsi halaman manage events adalah /main/events
-              className={`w-full justify-start ${isActive("/main/manage-event") ? "bg-primary hover:bg-orange-600 text-white" : "text-primary hover:text-orange-600 hover:bg-orange-50"}`}
+              variant={isActive("/main/manage-event") ? "default" : "ghost"}
+              className={`
+                w-full justify-start rounded-lg px-4 py-2 transition-all duration-200 ease-in-out
+                ${isActive("/main/manage-event")
+                  ? "bg-primary text-white shadow-md transform scale-[1.02] hover:bg-primary-dark"
+                  : "text-primary hover:text-primary-dark hover:bg-primary-50 active:bg-primary-100"
+                }
+              `}
             >
-              <Link href="/main/manage-event">
-                <Shield className="w-5 h-5 mr-3" />
-                Manage Events
+              <Link href="/main/manage-event" className="flex items-center w-full h-full">
+                <Shield className="w-5 h-5 mr-3 shrink-0" />
+                <span className="truncate">Manage Events</span>
               </Link>
             </Button>
 
             {/* Manage Users */}
             <Button
               asChild
-              variant={isActive("/main/manage-user") ? "default" : "ghost"} // Asumsi halaman manage users adalah /main/users
-              className={`w-full justify-start ${isActive("/main/manage-user") ? "bg-primary hover:bg-orange-600 text-white" : "text-primary hover:text-orange-600 hover:bg-orange-50"}`}
+              variant={isActive("/main/manage-user") ? "default" : "ghost"}
+              className={`
+                w-full justify-start rounded-lg px-4 py-2 transition-all duration-200 ease-in-out
+                ${isActive("/main/manage-user")
+                  ? "bg-primary text-white shadow-md transform scale-[1.02] hover:bg-primary-dark"
+                  : "text-primary hover:text-primary-dark hover:bg-primary-50 active:bg-primary-100"
+                }
+              `}
             >
-              <Link href="/main/manage-user">
-                <Users className="w-5 h-5 mr-3" />
-                Manage Users
+              <Link href="/main/manage-user" className="flex items-center w-full h-full">
+                <Users className="w-5 h-5 mr-3 shrink-0" />
+                <span className="truncate">Manage Users</span>
               </Link>
             </Button>
           </div>

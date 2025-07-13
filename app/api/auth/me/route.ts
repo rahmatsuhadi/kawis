@@ -28,7 +28,7 @@ export async function GET({}: Request) {
       select: { // Pilih field yang ingin dikembalikan ke frontend
         id: true,
         username: true,
-        fullName: true,
+        name: true,
         email: true,
         image: true, // URL gambar profil
         role: true,
@@ -81,7 +81,7 @@ export async function PUT(req: Request) {
     if (!currentUser) { return NextResponse.json({ message: "User tidak ditemukan." }, { status: 404 }); }
 
     // (Logika update data teks seperti fullName, username, email, password tetap sama)
-    if (fullName !== null && fullName.trim() !== '' && fullName.trim() !== currentUser.fullName) { updateData.fullName = fullName.trim(); }
+    if (fullName !== null && fullName.trim() !== '' && fullName.trim() !== currentUser.name) { updateData.fullName = fullName.trim(); }
     if (username !== null && username.trim() !== '' && username.trim() !== currentUser.username) {
         if (username.trim() !== currentUser.username) {
             const existingUsername = await prisma.user.findUnique({ where: { username: username.trim() } });
@@ -153,7 +153,7 @@ export async function PUT(req: Request) {
       where: { id: userIdToUpdate },
       data: updateData,
       select: {
-        id: true, username: true, fullName: true, email: true, image: true, role: true, createdAt: true, updatedAt: true,
+        id: true, username: true, name: true, email: true, image: true, role: true, createdAt: true, updatedAt: true,
       },
     });
 
