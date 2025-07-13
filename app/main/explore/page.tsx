@@ -22,8 +22,7 @@ interface EventsApiResponse {
     total: number;
 }
 
-export async function fetchEvents({ queryKey }: QueryFunctionContext): Promise<EventsApiResponse> {
-
+async function fetchEvents({ queryKey }: QueryFunctionContext): Promise<EventsApiResponse> {
     const [
         _key // eslint-disable-line @typescript-eslint/no-unused-vars
         ,
@@ -33,7 +32,7 @@ export async function fetchEvents({ queryKey }: QueryFunctionContext): Promise<E
         selectedCategoryIds, // Selected category IDs (comma-separated string)
         searchTerm,    // Search query text
         activeFilter,  // Active filter like 'free', 'paid', 'trending', 'upcoming' etc.
-    ] = queryKey as [string, number | undefined, number | undefined, number | undefined, string | undefined, string | undefined, string | undefined];
+    ] = queryKey as [string, number?, number?, number?, string?, string?, string?];
 
     let url = `/api/events?limit=10&offset=0`; // Default limit/offset for explore page
 
@@ -121,13 +120,13 @@ export default function ExplorePage() {
         // queryKey depends on all filters and user's location
         queryKey: [
             "exploreEvents",
-            userLocation?.latitude,
-            userLocation?.longitude,
-            userRadius ? parseFloat(userRadius) : undefined, // Radius is optional in API
+            userLocation?.latitude ?? 0,
+            userLocation?.longitude ?? 0,
+            userRadius ? parseFloat(userRadius) : 5, // Radius is optional in API
             selectedCategoryId, // Category ID filter
             searchQuery, // Search query text
             activeFilter, // General filter (free, paid, trending, etc.)
-        ],
+        ] as const,
         queryFn: fetchEvents, // Your fetchEvents function
         // Only enable query if user location is available and permission granted
         enabled: !!userLocation,

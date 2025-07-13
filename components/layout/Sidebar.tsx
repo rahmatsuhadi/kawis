@@ -74,7 +74,7 @@ export default function Sidebar() {
         </Button>
 
         {/* Post Event - Hanya terlihat jika ada sesi */}
-        {session && (
+        {true && (
           <Button
             asChild
             variant={isActive("/main/event-create") ? "default" : "ghost"}

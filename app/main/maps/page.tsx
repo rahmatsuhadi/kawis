@@ -11,7 +11,7 @@ import { QueryFunctionContext, useQuery } from "@tanstack/react-query"
 import { useGeolocation } from "@/context/geolocation-context"
 import Link from "next/link"
 
-import  { EventsApiResponse } from "@/components/event/EventList";
+import { EventsApiResponse } from "@/components/event/EventList";
 import { Separator } from "@/components/ui/separator"
 import MapMarkers from "@/components/interaktif-maps/MapMarker"
 import Image from "next/image"
@@ -25,9 +25,12 @@ import getInitialName from "@/lib/getInitialName"
 import { formatRupiah } from "@/lib/format-rupiah"
 
 
-export async function fetchEvents(context: QueryFunctionContext): Promise<EventsApiResponse> {
+type EventsQueryKey = readonly [string, number?, number?, string?, string[]?]
+
+
+ async function fetchEvents({ queryKey }: QueryFunctionContext) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [_key, lat, lng, radius, categories] = context.queryKey as [string, number?, number?, number?, string[]?]
+    const [_key, lat, lng, radius, categories] = queryKey as EventsQueryKey
 
     // Perbaiki URL untuk menyertakan query parameters
     let url = `/api/events/nearby`;
@@ -88,7 +91,9 @@ export default function Maps() {
         data,
     } = useQuery<EventsApiResponse, Error>({ // Gunakan EventsApiResponse sebagai tipe data
         enabled: !!userLocation,
-        queryKey: ["events-nearby", userLocation?.latitude, userLocation?.longitude, radarRadius, selectedCategoryIds],
+        queryKey: ["events-nearby",
+           userLocation?.latitude ?? 0, userLocation?.longitude ?? 0, radarRadius, selectedCategoryIds
+        ] as const,
         queryFn: fetchEvents,
         staleTime: 1000 * 60,
         refetchOnWindowFocus: true,
@@ -411,7 +416,7 @@ export default function Maps() {
                                                                 {/* Price (Dummy for now) */}
                                                                 <span className="font-semibold text-orange-600 text-sm">{formatRupiah(event.price?.toString())}</span> {/* Example price: Free */}
                                                                 <div className="flex gap-1">
-                                                                   
+
                                                                 </div>
                                                             </div>
                                                         </div>

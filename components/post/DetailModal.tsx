@@ -12,9 +12,9 @@ import {Heart, MessageSquare, Send, Loader2, X } from "lucide-react";
 import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
-import { PostResponse } from '@/app/main/page';
 import { CommentApiResponse } from './PostCard';
 import getInitialName from '@/lib/getInitialName';
+import { IPost } from '@/lib/type';
 
 // Assuming these types are defined and accessible (e.g., in lib/api/posts-api.ts or global types)
 // Also assuming getInitialName is defined in lib/utils
@@ -22,13 +22,13 @@ import getInitialName from '@/lib/getInitialName';
 interface PostDetailModalProps {
   isOpen: boolean; // Controls if the modal is open
   onOpenChange: (open: boolean) => void; // Callback when modal open state changes
-  initialPost: PostResponse; // The post data clicked from the main feed
+  initialPost: IPost; // The post data clicked from the main feed
 }
 
 // Function to fetch full post details if not already complete (e.g., comments not included in main list)
 // You might already have a /api/posts/[id] endpoint, if so, use that.
 // If your /api/posts endpoint returns full details, this fetcher might be redundant.
-async function fetchFullPostDetails(postId: string): Promise<PostResponse> {
+async function fetchFullPostDetails(postId: string): Promise<IPost> {
   const response = await fetch(`/api/posts/${postId}`); // Assuming you have /api/posts/[id] API
   if (!response.ok) {
     const errorData = await response.json();
@@ -106,7 +106,7 @@ export function PostDetailModal({ isOpen, onOpenChange, initialPost }: PostDetai
     isLoading: isLoadingPostDetails,
     isError: isErrorPostDetails,
     error: postDetailsError,
-  } = useQuery<PostResponse, Error>({
+  } = useQuery<IPost, Error>({
     queryKey: ["postDetail", initialPost.id], // Unique key for this specific post detail
     queryFn: ({ queryKey }) => fetchFullPostDetails(queryKey[1] as string),
     enabled: isOpen, // Only fetch when the modal is open

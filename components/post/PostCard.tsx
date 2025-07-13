@@ -15,8 +15,8 @@ import { Comment, User } from "@prisma/client"
 import { Badge } from "../ui/badge"
 import EmojiPicker from "../ui/emoji-picker"
 import Link from "next/link"
-import { PostResponse } from "@/app/main/page"
 import { PostDetailModal } from "./DetailModal"
+import { IPost } from "@/lib/type"
 
 export interface CommentPost extends Comment {
     user: User
@@ -47,7 +47,7 @@ const formatTimeAgo = (dateString: Date) => {
 }
 
 
-export default function PostCard({ post, index:i }: {index:number, post: PostResponse }) {
+export default function PostCard({ post, index:i }: {index:number, post: IPost }) {
 
     const queryClient = useQueryClient(); // Untuk invalidasi dan update cache
     const { data: session } = useSession(); // Status sesi user
@@ -443,6 +443,11 @@ export default function PostCard({ post, index:i }: {index:number, post: PostRes
                                         </div>
                                     </div>
                                 ))}
+                            </div>
+                        )}
+                        {comments.length==0 && !isLoadingComments && (
+                            <div>
+                                <p className="text-center">Belum ada komentar.</p>
                             </div>
                         )}
 

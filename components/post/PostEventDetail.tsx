@@ -3,17 +3,17 @@
 import {Loader2} from "lucide-react"
 import { Button } from "../ui/button"
 import { QueryFunctionContext, useInfiniteQuery } from "@tanstack/react-query"
-import { PostResponse } from "@/app/main/page"
 import PostCardSkeleton from "./PostSkeleton"
 import PostCard from "./PostCard"
+import { IPost } from "@/lib/type"
 
 
 interface PostsApiResponse {
-    posts: PostResponse[]; // Array event sesuai tipe Event di atas
+    posts: IPost[]; // Array event sesuai tipe Event di atas
     total: number; // Total jumlah event
 }
 
-export const POSTS_PER_PAGE = 4;
+ const POSTS_PER_PAGE = 4;
 async function fetchPosts(context: QueryFunctionContext): Promise<PostsApiResponse> {
     //  const [_key] =  context.queryKey;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars

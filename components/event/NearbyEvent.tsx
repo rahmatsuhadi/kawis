@@ -52,7 +52,7 @@ export default function NearbyEventsCard({
   const displayEvents = events.slice(0, maxEvents)
 
   const handleEventClick = (event: EventResponse) => {
-    router.push(`/main/event/${event.id}`)
+    router.push(`/main/e/${event.id}`)
   }
 
   const handleViewAll = () => {
@@ -88,7 +88,7 @@ export default function NearbyEventsCard({
                   <div className="relative flex-shrink-0">
                     <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 shadow-sm">
                       <Image
-                        src={event.images[0]?.imageUrl || "/placeholder.svg?height=48&width=48"}
+                        src={event.images[0] || "/placeholder.svg?height=48&width=48"}
                         alt={event.name}
                         width={48}
                         height={48}

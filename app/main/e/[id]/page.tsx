@@ -42,7 +42,7 @@ export interface EventDetail extends Event {
 
 
 // Fungsi untuk mengambil detail event dari API
-export async function getEventDetail(id: string): Promise<EventDetail | null> {
+async function getEventDetail(id: string): Promise<EventDetail | null> {
     const apiUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
     const res = await fetch(`${apiUrl}/api/events/${id}`, {
         cache: 'no-store' // Pastikan data selalu segar
@@ -59,7 +59,9 @@ export async function getEventDetail(id: string): Promise<EventDetail | null> {
 
 export default async function EventDetailPage({ params }: EventDetailPageProps) {
 
-    const event = await getEventDetail((await params).id);
+    const {id} = await params;
+
+    const event = await getEventDetail(id);
 
 
     if (!event) {
