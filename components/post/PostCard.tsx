@@ -445,6 +445,11 @@ export default function PostCard({ post, index:i }: {index:number, post: IPost }
                                 ))}
                             </div>
                         )}
+                        {comments.length==0 && !isLoadingComments && (
+                            <div>
+                                <p className="text-center">Belum ada komentar.</p>
+                            </div>
+                        )}
 
                         {/* Add Comment */}
                         {session && (

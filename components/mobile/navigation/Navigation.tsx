@@ -46,7 +46,7 @@ export default function Navigation() {
                     </Link>
 
                 </Button>
-                {session && (
+                {true && (
                     <Button
                         className={`flex flex-col items-center p-2 ${isActive("/main/event-create") ? 'text-orange-500' : 'text-gray-500'} `}
                         variant={"ghost"}

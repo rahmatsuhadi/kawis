@@ -52,7 +52,7 @@ export default function NearbyEventsCard({
   const displayEvents = events.slice(0, maxEvents)
 
   const handleEventClick = (event: EventResponse) => {
-    router.push(`/main/event/${event.id}`)
+    router.push(`/main/e/${event.id}`)
   }
 
   const handleViewAll = () => {
