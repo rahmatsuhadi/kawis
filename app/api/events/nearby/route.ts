@@ -1,7 +1,7 @@
 
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth"; // Untuk memeriksa sesi user
-import { EventStatus, PrismaClient } from "@prisma/client";
+import {  Prisma, PrismaClient } from "@prisma/client";
 import { authOptions } from "@/auth";
 import { calculateDistance } from "@/lib/calculate-distance";
 
@@ -19,6 +19,7 @@ export async function GET(req: Request) {
     const userLatParam = searchParams.get("lat");
     const userLngParam = searchParams.get("lng");
     const radiusKmParam = searchParams.get("radius"); // Radius in KM (now truly optional)
+    const categoriesParam = searchParams.get("categories"); // Radius in KM (now truly optional)
     // const statusParam = searchParams.get("status"); // Radius in KM (now truly optional)
 
     // Validate and parse required latitude and longitude if provided for filtering
@@ -41,7 +42,7 @@ export async function GET(req: Request) {
     }
 
 
-    const whereClause: { status?: EventStatus, startDate?: { gte: Date } } = {};
+    const whereClause: Prisma.EventWhereInput = {};
     const session = await getServerSession(authOptions);
 
     // Filtering logic based on 'status'
@@ -55,10 +56,24 @@ export async function GET(req: Request) {
     }
 
 
-      // --- Perubahan Kunci: Default Filter Temporal `startDate >= hari ini` ---
+    // --- Perubahan Kunci: Default Filter Temporal `startDate >= hari ini` ---
     const now = new Date();
     now.setHours(0, 0, 0, 0); // Atur ke awal hari ini
     whereClause.startDate = { gte: now }; // Hanya event yang dimulai hari ini atau nanti
+
+    // --- NEW: Filter by Categories ---
+    if (categoriesParam) {
+      const categoryIds = categoriesParam.split(','); // Split comma-separated IDs into an array
+      if (categoryIds.length > 0) {
+        whereClause.eventCategories = {
+          some: { // 'some' means that at least one related category matches
+            categoryId: {
+              in: categoryIds // Filter events that are linked to any of these category IDs
+            }
+          }
+        };
+      }
+    }
 
 
     // Fetch all events that match the `isApproved` status.
@@ -68,12 +83,7 @@ export async function GET(req: Request) {
         createdAt: "desc",
       },
       include: {
-        images: {
-          select: {
-            imageUrl: true,
-          },
-        },
-        approvedBy: { select: { id: true, email: true, fullName: true, username: true } },
+        approvedBy: { select: { id: true, email: true, name: true, username: true } },
         eventCategories: { select: { category: { select: { id: true, name: true, slug: true } } } },
       },
     });

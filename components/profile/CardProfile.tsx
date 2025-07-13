@@ -88,7 +88,7 @@ export default function CardProfile() {
             queryClient.invalidateQueries({ queryKey: ["posts"] }); // Invalidasi posts jika username/image berubah
             queryClient.invalidateQueries({ queryKey: ["postComments"] }); // Invalidasi comments
             update({
-                name: data.user.fullName,
+                name: data.user.name,
                 image: data.user.image,
                 username: data.user.username,
             })
@@ -106,7 +106,7 @@ export default function CardProfile() {
 
     useEffect(() => {
         if (userProfile) {
-            setFullName(userProfile.fullName || "");
+            setFullName(userProfile.name || "");
             setUsername(userProfile.username || "");
             setEmail(userProfile.email || "");
             setCurrentImageUrl(userProfile.image || null); // Tampilkan gambar dari DB
@@ -139,7 +139,7 @@ export default function CardProfile() {
 
         const formData = new FormData();
         // Tambahkan field teks hanya jika ada perubahan
-        if (fullName !== userProfile?.fullName) formData.append("fullName", fullName);
+        if (fullName !== userProfile?.name) formData.append("fullName", fullName);
         if (username !== userProfile?.username) formData.append("username", username);
         if (email !== userProfile?.email) formData.append("email", email);
         if (password.trim() !== '') formData.append("password", password); // Hanya kirim jika tidak kosong
@@ -167,7 +167,7 @@ export default function CardProfile() {
 
     const handleSetIsEditing = () => {
         if (isEditing) {
-            setFullName(userProfile?.fullName || "");
+            setFullName(userProfile?.name || "");
             setUsername(userProfile?.username || "");
             setEmail(userProfile?.email || "");
             setCurrentImageUrl(userProfile?.image || null);
@@ -227,7 +227,7 @@ export default function CardProfile() {
                                 <div className="relative"> {/* Tambahkan relative di sini */}
                                     <Avatar className="w-20 lg:w-32 h-20 lg:h-32 border-4 border-white bg-white shadow-2xl">
                                         <AvatarImage src={currentImageUrl || "/placeholder.jpg"} /> {/* Fallback placeholder */}
-                                        <AvatarFallback className="text-lg lg:text-2xl">{getInitialName(userProfile?.fullName || userProfile?.username)}</AvatarFallback> {/* Gunakan userProfile */}
+                                        <AvatarFallback className="text-lg lg:text-2xl">{getInitialName(userProfile?.name || userProfile?.username)}</AvatarFallback> {/* Gunakan userProfile */}
                                     </Avatar>
 
                                     {/* Input file tersembunyi yang dihubungkan dengan label */}

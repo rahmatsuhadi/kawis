@@ -39,24 +39,22 @@ export async function GET(req: Request, { params }: EventDetailParams) {
         status: 'APPROVED', // Hanya tampilkan event yang sudah disetujui
       },
       include: {
-        images: true, // Sertakan semua gambar terkait event
-        posts: {
-          // Sertakan postingan terkait event (opsional, bisa dibatasi jumlahnya)
-          take: 4,
-          include: {
-            user: {
-              // Sertakan informasi user yang membuat postingan
-              select: { id: true, fullName: true, email: true, image: true },
-            },
-            images: true, // Sertakan gambar postingan juga
-          },
-          orderBy: {
-            createdAt: 'desc', // Urutkan postingan terbaru di atas
-          },
-        },
+        // posts: {
+        //   // Sertakan postingan terkait event (opsional, bisa dibatasi jumlahnya)
+        //   take: 4,
+        //   include: {
+        //     user: {
+        //       // Sertakan informasi user yang membuat postingan
+        //       select: { id: true, name: true, email: true, image: true },
+        //     },
+        //   },
+        //   orderBy: {
+        //     createdAt: 'desc', // Urutkan postingan terbaru di atas
+        //   },
+        // },
         approvedBy: {
           // Sertakan informasi admin yang menyetujui event
-          select: { id: true, fullName: true, email: true },
+          select: { id: true, name: true, email: true },
         },
         eventCategories: {
           // <-- Sertakan kategori dalam respons
@@ -70,6 +68,12 @@ export async function GET(req: Request, { params }: EventDetailParams) {
             },
           }, // Sertakan detail kategori dari tabel Category
         },
+        createdBy:{
+          select:{
+            name:true,
+            image:true
+          }
+        }
       },
     });
 
@@ -325,10 +329,9 @@ export async function PATCH(req: Request, { params }: EventDetailParams) {
       data: updateData,
       include: {
         // Sertakan relasi yang relevan dalam respons
-        images: true,
         eventCategories: { include: { category: true } },
         approvedBy: {
-          select: { id: true, username: true, fullName: true, email: true },
+          select: { id: true, username: true, name: true, email: true },
         },
       },
     });

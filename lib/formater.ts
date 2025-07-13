@@ -7,7 +7,7 @@ export  const formatDate = (dateString: string | Date) => {
       day: "2-digit",
       year: "numeric",
     }
-    return date.toLocaleDateString("en-US", options)
+    return date.toLocaleDateString("id-ID", options)
   }
 
 export  const formatTime = (dateString: string | Date) => {

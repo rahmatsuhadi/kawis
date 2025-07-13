@@ -53,7 +53,7 @@ export async function POST(req: Request) {
     // Buat user baru dengan fullName
     const newUser = await prisma.user.create({
       data: {
-        fullName, // Simpan fullName
+        name:fullName, // Simpan fullName
         email,
         username,
         password: hashedPassword,

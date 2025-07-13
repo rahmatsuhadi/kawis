@@ -1,7 +1,7 @@
 // app/api/posts/route.ts
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth"; // Untuk memeriksa sesi user
-import { PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 import { authOptions } from "@/auth";
 
 const prisma = new PrismaClient();
@@ -19,7 +19,7 @@ export async function POST(req: Request) {
         const {
             eventId, // ID dari event yang terkait dengan postingan ini
             content, // Konten teks postingan
-            imageUrl // URL gambar yang sudah diunggah (string tunggal)
+            imageUrls // URL gambar yang sudah diunggah (string tunggal)
         } = await req.json();
 
         // 3. Validasi Input
@@ -27,7 +27,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ message: "Event ID and content are required." }, { status: 400 });
         }
         // Jika ada gambar, pastikan URL-nya tidak kosong
-        if (imageUrl !== null && imageUrl === "") {
+        if (imageUrls !== null && imageUrls.length == 0) {
             return NextResponse.json({ message: "Image URL cannot be empty if provided." }, { status: 400 });
         }
 
@@ -49,15 +49,11 @@ export async function POST(req: Request) {
                 // Anda bisa memilih antara `fullName` atau `username` sebagai fallback.
                 postedByName: session.user.name || "User Terdaftar",
                 userId: session.user.id, // Kaitkan postingan dengan user yang membuatnya
-                images: {
-                    create: {
-                        imageUrl: imageUrl
-                    }
-                }, // Simpan URL gambar tunggal jika ada
+                images: imageUrls // Simpan URL gambar tunggal jika ada
             },
             include: {
                 user: { // Sertakan informasi user yang membuat postingan dalam respons
-                    select: { id: true, fullName: true, email: true, image: true },
+                    select: { id: true, name: true, email: true, image: true },
                 },
                 event: { // Sertakan informasi dasar event terkait dalam respons
                     select: { id: true, name: true, startDate: true, endDate: true },
@@ -89,8 +85,15 @@ export async function GET(req: Request) {
     // const status = searchParams.get("status"); // Bisa 'approved', 'pending'
     const limit = parseInt(searchParams.get("limit") || "10", 10);
     const offset = parseInt(searchParams.get("offset") || "0", 10);
+    
+    const eventId = searchParams.get("eventId")
 
-    const whereClause = {};
+    const whereClause:Prisma.EventPostWhereInput = {};
+
+    if(eventId){
+        whereClause.eventId = eventId
+    }
+    console.log(whereClause)
 
     // Ambil event dari database
     const posts = await prisma.eventPost.findMany({
@@ -101,6 +104,11 @@ export async function GET(req: Request) {
         createdAt: "desc", // Urutkan dari yang terbaru
       },
       include: {
+        postLike:{
+            select:{
+                userId:true
+            }
+        },
         event:{
             select:{
                 name: true
@@ -108,28 +116,25 @@ export async function GET(req: Request) {
         },
         user: {
             select:{
-                fullName:true,
+                name:true,
                 id:true,
                 emailVerified:true,
                 image:true,
                 username:true
             }
-        },
-        images: {
-            select:{
-                imageUrl:true
-            }
-        }, // Sertakan semua gambar event       
+        }, 
       },
     });
 
-    const totalEvents = await prisma.event.count({
+
+
+    const totalPost = await prisma.eventPost.count({
       where: whereClause,
       take: limit,
       skip: offset,
     });
 
-    return NextResponse.json({ posts, total: totalEvents });
+    return NextResponse.json({ posts, total: totalPost });
   } catch (error) {
     console.error("Error listing Posts:", error);
     if (error instanceof Error) {

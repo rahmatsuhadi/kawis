@@ -17,7 +17,9 @@ export default function Header() {
   const { data: session, status, } = useSession()
   
   
-  const { address, setRadius, radius } = useGeolocation()
+  const { address, setRadius, radius, } = useGeolocation()
+
+
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false)
   const router = useRouter()
   const handleLocationClick = () => {
@@ -156,6 +158,8 @@ export default function Header() {
           )}
         </div>
       </header>
+
+      {/* <LocationRequiredModal isOpen={isModalPosition} onPress={() => setIsLocationModalOpen(false)}/> */}
 
       {/* Location Modal */}
       <LocationModal isOpen={isLocationModalOpen} onClose={() => setIsLocationModalOpen(false)} />

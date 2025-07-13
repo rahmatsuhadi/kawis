@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
@@ -24,85 +24,15 @@ import {
     UserX,
     Mail,
     CalendarDays,
+    ChevronLeft,
+    ChevronRight,
 } from "lucide-react"
 import { User, UserRole } from "@prisma/client"
 import { formatDate } from "@/lib/formater"
 import { QueryFunctionContext, useQuery } from "@tanstack/react-query"
 import getInitialName from "@/lib/getInitialName"
+import UserRowSkeleton from "./Card"
 
-// Mock data for users
-// const usersData = [
-//     {
-//         id: 1,
-//         name: "Moren Jordan",
-//         email: "moren.jordan@email.com",
-//         phone: "+62 812-3456-7890",
-//         role: "admin",
-//         status: "active",
-//         joinDate: "15 Jan 2024",
-//         lastLogin: "2 hours ago",
-//         location: "Yogyakarta",
-//         eventsCreated: 5,
-//         postsCreated: 12,
-//         avatar: "/placeholder.jpg?height=40&width=40",
-//     },
-//     {
-//         id: 2,
-//         name: "Zahra Kuliawati",
-//         email: "zahra.kuliawati@email.com",
-//         phone: "+62 813-4567-8901",
-//         role: "user",
-//         status: "active",
-//         joinDate: "20 Jan 2024",
-//         lastLogin: "1 day ago",
-//         location: "Sleman",
-//         eventsCreated: 2,
-//         postsCreated: 8,
-//         avatar: "/placeholder.jpg?height=40&width=40",
-//     },
-//     {
-//         id: 3,
-//         name: "Deny Caknan",
-//         email: "deny.caknan@email.com",
-//         phone: "+62 814-5678-9012",
-//         role: "user",
-//         status: "active",
-//         joinDate: "10 Feb 2024",
-//         lastLogin: "3 hours ago",
-//         location: "Bantul",
-//         eventsCreated: 3,
-//         postsCreated: 15,
-//         avatar: "/placeholder.jpg?height=40&width=40",
-//     },
-//     {
-//         id: 4,
-//         name: "Jihan Audy",
-//         email: "jihan.audy@email.com",
-//         phone: "+62 815-6789-0123",
-//         role: "user",
-//         status: "inactive",
-//         joinDate: "25 Feb 2024",
-//         lastLogin: "1 week ago",
-//         location: "Yogyakarta",
-//         eventsCreated: 1,
-//         postsCreated: 3,
-//         avatar: "/placeholder.jpg?height=40&width=40",
-//     },
-//     {
-//         id: 5,
-//         name: "Bille Warsin",
-//         email: "bille.warsin@email.com",
-//         phone: "+62 816-7890-1234",
-//         role: "user",
-//         status: "suspended",
-//         joinDate: "5 Mar 2024",
-//         lastLogin: "2 weeks ago",
-//         location: "Kulon Progo",
-//         eventsCreated: 0,
-//         postsCreated: 1,
-//         avatar: "/placeholder.jpg?height=40&width=40",
-//     },
-// ]
 
 const getRoleBadge = (role: UserRole) => {
     switch (role) {
@@ -126,8 +56,7 @@ const getStatusBadge = (status: boolean) => {
 }
 
 
-
-
+// --- User Detail Dialog Component ---
 const UserDetailDialog = ({ user }: { user: User }) => (
     <Dialog>
         <DialogTrigger asChild>
@@ -140,24 +69,21 @@ const UserDetailDialog = ({ user }: { user: User }) => (
             <DialogHeader>
                 <DialogTitle className="flex items-center gap-2">
                     <Users className="w-5 h-5" />
-                    User Details - {user.fullName}
+                    User Details - {user.name || user.username}
                 </DialogTitle>
-                <DialogDescription>Informasi tentang pengguna dan management</DialogDescription>
+                <DialogDescription>Information about the user and management options</DialogDescription>
             </DialogHeader>
-            <div className="space-y-6">
+            <div className="space-y-6 py-4">
                 {/* User Avatar and Basic Info */}
                 <div className="flex items-center gap-4">
                     <Avatar className="w-16 h-16">
-                        <AvatarImage src={user.image || "/placeholder.jpg"} />
+                        <AvatarImage src={user.image || "/placeholder-user.jpg"} />
                         <AvatarFallback>
-                            {(user.fullName as string)
-                                .split(" ")
-                                .map((n: string) => n[0])
-                                .join("")}
+                            {getInitialName(user.name || user.username)}
                         </AvatarFallback>
                     </Avatar>
                     <div>
-                        <h3 className="text-lg font-semibold">{user.fullName}</h3>
+                        <h3 className="text-lg font-semibold">{user.name || user.username}</h3>
                         <div className="flex gap-2 mt-1">
                             {getRoleBadge(user.role)}
                             {getStatusBadge(!!user.emailVerified)}
@@ -174,13 +100,6 @@ const UserDetailDialog = ({ user }: { user: User }) => (
                         </label>
                         <p className="text-sm">{user.email}</p>
                     </div>
-                    {/* <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-600 flex items-center gap-1">
-                            <MapPinIcon className="w-4 h-4" />
-                            Location
-                        </label>
-                        <p className="text-sm">{user.location}</p>
-                    </div> */}
                     <div className="space-y-2">
                         <label className="text-sm font-medium text-gray-600 flex items-center gap-1">
                             <CalendarDays className="w-4 h-4" />
@@ -191,139 +110,154 @@ const UserDetailDialog = ({ user }: { user: User }) => (
                 </div>
 
                 {/* Activity Stats */}
-                <div className="grid grid-cols-3 gap-4">
+                {/* <div className="grid grid-cols-3 gap-4">
                     <div className="text-center p-3 bg-gray-50 rounded-lg">
-                        {/* <p className="text-2xl font-bold text-orange-600">{user}</p> */}
-                        <p className="text-sm text-gray-600">Events Created</p>
+                        <p className="text-2xl font-bold text-orange-600">{user._count?.eventPosts || 0}</p>
+                        <p className="text-sm text-gray-600">Events Posted</p>
                     </div>
                     <div className="text-center p-3 bg-gray-50 rounded-lg">
-                        {/* <p className="text-2xl font-bold text-blue-600">{user.postsCreated}</p> */}
-                        <p className="text-sm text-gray-600">Posts Created</p>
+                        <p className="text-2xl font-bold text-blue-600">{user._count?.approvedEvents || 0}</p>
+                        <p className="text-sm text-gray-600">Events Approved</p>
                     </div>
-                    <div className="text-center p-3 bg-gray-50 rounded-lg">
-                        <p className="text-sm font-medium text-gray-600">Last Login</p>
-                        {/* <p className="text-sm text-gray-900">{user.lastLogin}</p> */}
-                    </div>
-                </div>
+                </div> */}
 
-                {/* Role and Status Management */}
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-600">Change Role</label>
-                        <Select value={user.role} onValueChange={(value) => console.log(user.id, value)}>
-                            <SelectTrigger>
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="user">User</SelectItem>
-                                <SelectItem value="admin">Admin</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-600">Change Status</label>
-                        {/* <Select value={!!user.emailVerified} onValueChange={(value) => console.log(user.id, value)}>
-                            <SelectTrigger>
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="active">Active</SelectItem>
-                                <SelectItem value="inactive">Inactive</SelectItem>
-                                <SelectItem value="suspended">Suspended</SelectItem>
-                            </SelectContent>
-                        </Select> */}
-                    </div>
-                </div>
+                {/* Role and Status Management (Placeholder for actual update logic) */}
+                
             </div>
             <DialogFooter>
-                <Button variant="outline">Send Message</Button>
-                <Button className="bg-orange-500 hover:bg-orange-600">Save Changes</Button>
+                {/* <Button variant="outline">Send Message</Button> */}
+                <Button className="bg-orange-500 hover:bg-orange-600">Close</Button>
             </DialogFooter>
         </DialogContent>
     </Dialog>
-)
+);
 
 
 
-export interface EventsApiResponse {
-  users: User[]; // Array event sesuai tipe Event di atas
-  total: number; // Total jumlah event
+export interface UsersApiResponse { // Type for the full API response
+  users: User[];
+  total: number;
 }
 
-export async function fetchEvents(context: QueryFunctionContext): Promise<EventsApiResponse> {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [_key,] = context.queryKey as [string]
+// --- fetchUsers function ---
+export async function fetchUsers(context: QueryFunctionContext): Promise<UsersApiResponse> {
+    const [
+        _key // eslint-disable-line @typescript-eslint/no-unused-vars
+        ,
+    filters // Filters object from queryKey
+  ] = context.queryKey as [string, {
+    roleFilter?: string; // "all", "admin", "user"
+    statusFilter?: string; // "all", "active", "inactive", "suspended" (based on emailVerified)
+    page?: number;
+    limit?: number;
+    // Add other filters like search term here if needed
+  }];
 
-    const url = `/api/users`;
+  const page = filters.page || 1;
+  const limit = filters.limit || 10;
+  const offset = (page - 1) * limit;
 
-    //   url += `?lat=${lat}&lng=${lng}&sort=distance`;
+  let url = `/api/users?limit=${limit}&offset=${offset}`;
 
+  if (filters.roleFilter && filters.roleFilter !== "all") {
+    url += `&role=${filters.roleFilter.toUpperCase()}`; // API expects uppercase enum
+  }
 
-    const response = await fetch(url);
-    if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Gagal memuat users.");
-    }
-    const data: EventsApiResponse = await response.json(); // Cast data ke tipe yang benar
-    return data;
+  console.log(`Fetching users for admin table from: ${url}`);
+
+  const response = await fetch(url);
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || "Failed to load users.");
+  }
+  const data: UsersApiResponse = await response.json();
+  return data;
 }
 
 export default function UserManagementContainer() {
 
-    const [filterStatus, setFilterStatus] = useState("all")
-    const [filterRole, setFilterRole] = useState("all")
+     // States for filters and pagination
+    const [filterStatus, setFilterStatus] = useState("all"); // 'all', 'verified', 'unverified'
+    const [filterRole, setFilterRole] = useState("all"); // 'all', 'admin', 'user'
+    const [currentPage, setCurrentPage] = useState(1);
+    const [usersPerPage] = useState(5); // Items per page
+
 
      const {
         data,
-    } = useQuery<EventsApiResponse, Error>({ 
-        queryKey: ["users"],
-        queryFn: fetchEvents,
+        isLoading,
+        isFetching,
+
+    } = useQuery<UsersApiResponse, Error>({ 
+        queryKey: ["users", { // Filters passed as an object
+                roleFilter: filterRole,
+                statusFilter: filterStatus, // Will filter client-side if API doesn't support
+                page: currentPage,
+                limit: usersPerPage
+            }],
+        queryFn: fetchUsers,
         refetchOnWindowFocus: true,
     });
 
     
-    const users = data?.users || [];
+    const users = useMemo(() =>  data?.users || [],[data?.users]);
+    
+    const totalUsers = data?.total || 0; // Total count for pagination
+    const totalPages = Math.ceil(totalUsers / usersPerPage);
 
 
-    // const handleStatusChange = (userId: number, newStatus: string) => {
-        // setUsers(users.map((user) => (user.id === userId ? { ...user, status: newStatus } : user)))
-    // }
+    // --- Client-side filtering by email verification status ---
+    const filteredUsers = useMemo(() => {
+        let currentUsers = users;
 
-    // const handleRoleChange = (userId: number, newRole: string) => {
-        // setUsers(users.map((user) => (user.id === userId ? { ...user, role: newRole } : user)))
-    // }
+        // Apply role filter (API already handles this mostly, but client-side ensures consistency)
+        if (filterRole !== "all") {
+            currentUsers = currentUsers.filter(u => u.role === filterRole.toUpperCase());
+        }
 
-    // const filteredUsers = users.filter((user) => {
-    //     const statusMatch = filterStatus === "all" || user.rol === filterStatus
-    //     const roleMatch = filterRole === "all" || user.role === filterRole
-    //     return statusMatch && roleMatch
-    // })
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // Apply status filter based on emailVerified
+        if (filterStatus === "verified") {
+            currentUsers = currentUsers.filter(u => !!u.emailVerified);
+        } else if (filterStatus === "unverified") {
+            currentUsers = currentUsers.filter(u => !u.emailVerified);
+        }
+        // "suspended" or "inactive" would need a dedicated field in your User model if you implement them.
+        // For now, they'll just fall through or not filter.
+
+        return currentUsers;
+    }, [users, filterRole, filterStatus]);
+
+
+
 
     return (
-        <div className="max-w-7xl mx-auto">
+      <div className="max-w-7xl mx-auto p-4">
             <div className="flex items-center justify-between mb-6">
                 <h1 className="text-3xl font-bold">User Management</h1>
                 <div className="flex items-center gap-4">
-                    <Select value={filterRole} onValueChange={setFilterRole}>
+                    {/* Role Filter */}
+                    <Select value={filterRole} onValueChange={setFilterRole} disabled={isLoading || isFetching}>
                         <SelectTrigger className="w-40">
                             <SelectValue placeholder="Filter by role" />
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="all">All Roles</SelectItem>
-                            <SelectItem value="admin">Admin</SelectItem>
-                            <SelectItem value="user">User</SelectItem>
+                            <SelectItem value={UserRole.ADMIN}>Admin</SelectItem>
+                            <SelectItem value={UserRole.USER}>User</SelectItem>
                         </SelectContent>
                     </Select>
-                    <Select value={filterStatus} onValueChange={setFilterStatus}>
+                    {/* Status Filter (Email Verified) */}
+                    <Select value={filterStatus} onValueChange={setFilterStatus} disabled={isLoading || isFetching}>
                         <SelectTrigger className="w-48">
                             <SelectValue placeholder="Filter by status" />
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="all">All Status</SelectItem>
-                            <SelectItem value="active">Active</SelectItem>
-                            <SelectItem value="inactive">Inactive</SelectItem>
-                            <SelectItem value="suspended">Suspended</SelectItem>
+                            <SelectItem value="verified">Verified</SelectItem>
+                            <SelectItem value="unverified">Unverified</SelectItem>
+                            {/* <SelectItem value="active">Active</SelectItem> */}
+                            {/* <SelectItem value="inactive">Inactive</SelectItem> */}
+                            {/* <SelectItem value="suspended">Suspended</SelectItem> */}
                         </SelectContent>
                     </Select>
                 </div>
@@ -336,7 +270,7 @@ export default function UserManagementContainer() {
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="text-sm text-gray-600">Total Users</p>
-                                <p className="text-2xl font-bold">{users.length}</p>
+                                <p className="text-2xl font-bold">{totalUsers}</p> {/* Use totalUsers from API */}
                             </div>
                             <Users className="w-8 h-8 text-orange-500" />
                         </div>
@@ -346,9 +280,9 @@ export default function UserManagementContainer() {
                     <CardContent className="p-4">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm text-gray-600">Active Users</p>
+                                <p className="text-sm text-gray-600">Active (Verified) Users</p>
                                 <p className="text-2xl font-bold text-green-600">
-                                    {users.filter((u) => !!u.emailVerified).length}
+                                    {users.filter((u) => !!u.emailVerified).length} {/* Filter from current data */}
                                 </p>
                             </div>
                             <UserCheck className="w-8 h-8 text-green-500" />
@@ -361,7 +295,7 @@ export default function UserManagementContainer() {
                             <div>
                                 <p className="text-sm text-gray-600">Admins</p>
                                 <p className="text-2xl font-bold text-blue-600">
-                                    {users.filter((u) => u.role === "ADMIN").length}
+                                    {users.filter((u) => u.role === UserRole.ADMIN).length} {/* Filter from current data */}
                                 </p>
                             </div>
                             <Shield className="w-8 h-8 text-blue-500" />
@@ -372,9 +306,9 @@ export default function UserManagementContainer() {
                     <CardContent className="p-4">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm text-gray-600">Suspended</p>
+                                <p className="text-sm text-gray-600">Unverified Users</p> {/* Changed from Suspended */}
                                 <p className="text-2xl font-bold text-red-600">
-                                    {users.filter((u) => !!!u.emailVerified).length}
+                                    {users.filter((u) => !u.emailVerified).length} {/* Filter from current data */}
                                 </p>
                             </div>
                             <UserX className="w-8 h-8 text-red-500" />
@@ -395,44 +329,80 @@ export default function UserManagementContainer() {
                                 <TableHead className="text-white font-semibold">Role</TableHead>
                                 <TableHead className="text-white font-semibold">Status</TableHead>
                                 <TableHead className="text-white font-semibold">Join Date</TableHead>
-                                <TableHead className="text-white font-semibold">Last Login</TableHead>
                                 <TableHead className="text-white font-semibold">Action</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {users?.map((user, index) => (
-                                <TableRow key={user.id} className="hover:bg-gray-50">
-                                    <TableCell className="font-medium">{index + 1}</TableCell>
-                                    <TableCell>
-                                        <div className="flex items-center gap-3">
-                                            <Avatar className="w-8 h-8">
-                                                <AvatarImage src={user.image || "/placeholder.jpg"} />
-                                                <AvatarFallback>
-                                                    {getInitialName(user.fullName)}
-                                                </AvatarFallback>
-                                            </Avatar>
-                                            <div>
-                                                <p className="font-medium">{user.fullName}</p>
-                                                {/* <p className="text-xs text-gray-500">{user.location}</p> */}
-                                            </div>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>{user.email}</TableCell>
-                                    <TableCell>{getRoleBadge(user.role)}</TableCell>
-                                    <TableCell>{getStatusBadge(!!user.emailVerified)}</TableCell>
-                                    <TableCell>{formatDate(user.createdAt)}</TableCell>
-                                    {/* <TableCell>{user.lastLogin}</TableCell> */}
-                                    <TableCell>
-                                        <div className="flex gap-2">
-                                            <UserDetailDialog user={user} />
-                                        </div>
+                            {isLoading || isFetching ? ( // Condition for global table loading
+                                // --- Loading Skeleton Rows ---
+                                Array.from({ length: usersPerPage }).map((_, i) => (
+                                    <UserRowSkeleton key={i} />
+                                ))
+                            ) : filteredUsers.length === 0 ? (
+                                // --- No Users Found Message ---
+                                <TableRow>
+                                    <TableCell colSpan={8} className="text-center text-gray-500 py-4">
+                                        No users found for this filter.
                                     </TableCell>
                                 </TableRow>
-                            ))}
+                            ) : (
+                                // --- Actual User Rows ---
+                                filteredUsers.map((user, index) => (
+                                    <TableRow key={user.id} className="hover:bg-gray-50">
+                                        <TableCell className="font-medium">{(currentPage - 1) * usersPerPage + index + 1}</TableCell>
+                                        <TableCell>
+                                            <div className="flex items-center gap-3">
+                                                <Avatar className="w-8 h-8">
+                                                    <AvatarImage src={user.image || "/placeholder-user.jpg"} />
+                                                    <AvatarFallback>{getInitialName(user.name || user.username)}</AvatarFallback>
+                                                </Avatar>
+                                                <div>
+                                                    <p className="font-medium">{user.name || user.username}</p>
+                                                </div>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>{user.email}</TableCell>
+                                        <TableCell>{getRoleBadge(user.role)}</TableCell>
+                                        <TableCell>{getStatusBadge(!!user.emailVerified)}</TableCell>
+                                        <TableCell>{formatDate(user.createdAt)}</TableCell>
+                                        <TableCell>
+                                            <div className="flex gap-2">
+                                                <UserDetailDialog user={user} />
+                                                {/* Actions like suspend/activate */}
+                                                {/* <Button variant="outline" size="sm" className="border-red-500 text-red-500">Suspend</Button> */}
+                                                {/* <Button variant="outline" size="sm" className="border-green-500 text-green-500">Activate</Button> */}
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            )}
                         </TableBody>
                     </Table>
                 </CardContent>
             </Card>
+
+            {/* Pagination Controls */}
+            <div className="flex justify-between items-center mt-6">
+                <Button
+                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                    disabled={currentPage === 1 || isLoading || isFetching}
+                    variant="outline"
+                    className="border-orange-500 text-orange-600 hover:bg-orange-50"
+                >
+                    <ChevronLeft className="w-4 h-4 mr-2" /> Previous
+                </Button>
+                <span className="text-gray-700 text-sm">
+                    Page {currentPage} of {totalPages} ({totalUsers} users)
+                </span>
+                <Button
+                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                    disabled={currentPage === totalPages || isLoading || isFetching}
+                    variant="outline"
+                    className="border-orange-500 text-orange-600 hover:bg-orange-50"
+                >
+                    Next <ChevronRight className="w-4 h-4 ml-2" />
+                </Button>
+            </div>
         </div>
     )
 }

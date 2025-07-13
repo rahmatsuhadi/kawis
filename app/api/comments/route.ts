@@ -20,7 +20,7 @@ export async function GET(req: Request) {
       where: { postId: postId },
       orderBy: { createdAt: "asc" }, // Urutkan dari yang terlama (kronologis)
       include: {
-        user: { select: { id: true, fullName: true, username: true, email: true, image: true } },
+        user: { select: { id: true, name: true, username: true, email: true, image: true } },
       },
     });
 
@@ -64,7 +64,7 @@ export async function POST(req: Request) {
         userId: session.user.id, // User yang membuat komentar
       },
       include: {
-        user: { select: { id: true, fullName: true, username: true, email: true, image: true } },
+        user: { select: { id: true, name: true, username: true, email: true, image: true } },
       },
     });
 

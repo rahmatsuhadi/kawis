@@ -49,7 +49,7 @@ export const authOptions: NextAuthOptions = {
         // Jangan sertakan password di sini untuk alasan keamanan!
         return {
           id: user.id,
-          name: user.fullName, // Gunakan username sebagai 'name' di session
+          name: user.name, // Gunakan username sebagai 'name' di session
           email: user.email,
           role: user.role, // Penting: sertakan role user
           image: user.image,
@@ -81,13 +81,13 @@ export const authOptions: NextAuthOptions = {
       // 'user' objek hanya ada saat user pertama kali login atau saat JWT diperbarui
       if (trigger === "update") {
         // Note, that `session` can be any arbitrary object, remember to validate it!
-        token.name = session.fullName
+        token.name = session.name
         token.image = session.image
       }
       if (user) {
         token.id = user.id;
         token.role = user.role || "USER"; // Tambahkan role dari user ke JWT
-        token.name = user.fullName
+        token.name = user.name
         if (user.image) {
           token.image = user.image
         }
@@ -169,7 +169,7 @@ export const authOptions: NextAuthOptions = {
                 where: { id: existingUser.id },
                 data: {
                   username: String(user.email).split("@")[0],
-                  fullName: user.name || existingUser.fullName, // Update name/fullName
+                  name: user.name || existingUser.name, // Update name/name
                   image: user.image || existingUser.image, // Update image
                   emailVerified: existingUser.emailVerified || new Date(), // Set email as verified if not already
                 },
@@ -194,7 +194,7 @@ export const authOptions: NextAuthOptions = {
             data: {
               email: user.email as string,
               username: String(user.email).split("@")[0],
-              fullName: user.name, // Update name/fullName
+              name: user.name, // Update name/name
               image: user.image,
               emailVerified: new Date(), // Set email as verified if not already
             },

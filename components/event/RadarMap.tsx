@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useMemo } from "react"
-import Map, {  Marker } from "react-map-gl/mapbox"
+import Map, {  Layer, Marker, Source } from "react-map-gl/mapbox"
 import { MapPin, Calendar } from "lucide-react"
 import "mapbox-gl/dist/mapbox-gl.css"
 import { useGeolocation } from "@/context/geolocation-context"
@@ -40,30 +40,30 @@ function calculateDistance(lat1: number, lng1: number, lat2: number, lng2: numbe
   return R * c
 }
 
+
 // Function to create route line GeoJSON
-// function createRouteLine(start: [number, number], end: [number, number]) {
-//   return {
-//     type: "FeatureCollection" as const,
-//     features: [
-//       {
-//         type: "Feature" as const,
-//         geometry: {
-//           type: "LineString" as const,
-//           coordinates: [start, end],
-//         },
-//         properties: {},
-//       },
-//     ],
-//   }
-// }
+function createRouteLine(start: [number, number], end: [number, number]) {
+  return {
+    type: "FeatureCollection" as const,
+    features: [
+      {
+        type: "Feature" as const,
+        geometry: {
+          type: "LineString" as const,
+          coordinates: [start, end],
+        },
+        properties: {},
+      },
+    ],
+  }
+}
 
 
 export default function RadarMaps({
   eventLocation,
   currentLocation,
-  width = 500,
-  height = 500,
   onEventClick,
+  showRoute = false, // Default to false
   onCurrentLocationClick,
   className = "",
 }: RadarMapsProps) {
@@ -73,6 +73,16 @@ export default function RadarMaps({
   const {location} = useGeolocation()
 
   const userLoc = location || currentLocation
+
+   const routeGeoJson = useMemo(() => {
+    if (showRoute && userLoc && eventLocation) {
+      return createRouteLine(
+        [userLoc.longitude, userLoc.latitude],
+        [eventLocation.longitude, eventLocation.latitude]
+      );
+    }
+    return null;
+  }, [showRoute, userLoc, eventLocation]);
 
   // Calculate map center and zoom
   const { mapCenter, zoomLevel } = useMemo(() => {
@@ -113,90 +123,89 @@ export default function RadarMaps({
 
 
   return (
-    <div className={`relative ${className}`}>
-      {/* Orange border circle */}
-      <div
-        className="absolute inset-0 rounded-full border-4 border-orange-500 z-10 pointer-events-none"
-        style={{ width: `${width}px`, height: `${height}px` }}
-      ></div>
-
-      {/* Map container with circular clip */}
-      <div
-        className="rounded-full overflow-hidden bg-white shadow-2xl"
-        style={{ width: `${width}px`, height: `${height}px` }}
+    <div className={`relative bg-white shadow-2xl rounded-lg overflow-hidden ${className}`}>
+      <Map
+        mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN}
+        initialViewState={{
+          longitude: mapCenter.longitude,
+          latitude: mapCenter.latitude,
+          zoom: zoomLevel,
+        }}
+        style={{ width: "100%", height: "100%" }} // Map fills its direct parent (the div above)
+        mapStyle={process.env.NEXT_PUBLIC_MAPBOX_STYLE_URL}
+        attributionControl={false}
+        interactive={true} // Allow user interaction
       >
-        <Map
-          mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN}
-          initialViewState={{
-            longitude: mapCenter.longitude,
-            latitude: mapCenter.latitude,
-            zoom: zoomLevel,
-          }}
-          style={{ width: "100%", height: "100%" }}
-          mapStyle={process.env.NEXT_PUBLIC_MAPBOX_STYLE_URL}
-          attributionControl={false}
-          interactive={true}
-        >
-          
+        {/* Route Line */}
+        {routeGeoJson && (
+          <Source id="route-line" type="geojson" data={routeGeoJson}>
+            <Layer
+              id="route-line-layer"
+              type="line"
+              paint={{
+                "line-color": "#007bff", // Blue color for the line
+                "line-width": 4,
+                "line-dasharray": [2, 2], // Dashed line
+              }}
+            />
+          </Source>
+        )}
 
-          {/* Event location marker (always shown) */}
-          <Marker longitude={eventLocation.longitude} latitude={eventLocation.latitude} anchor="center">
+        {/* Event location marker (always shown on this map) */}
+        <Marker longitude={eventLocation.longitude} latitude={eventLocation.latitude} anchor="center">
+          <div
+            className="relative group"
+            onMouseEnter={() => setHoveredMarker("event")}
+            onMouseLeave={() => setHoveredMarker(null)}
+            onClick={() => onEventClick?.(eventLocation)}
+          >
+            {/* Event marker visual */}
+            <div className="w-12 h-12 bg-red-500 rounded-full border-3 border-white shadow-lg flex items-center justify-center cursor-pointer hover:scale-110 transition-transform">
+              <Calendar className="h-6 w-6 text-white" />
+            </div>
+
+            {/* Tooltip on hover */}
+            {hoveredMarker === "event" && (
+              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-3 px-3 py-2 bg-black text-white text-sm rounded whitespace-nowrap opacity-100 transition-opacity pointer-events-none z-20 max-w-xs">
+                <div className="font-medium">{eventLocation.name}</div>
+                {eventLocation.type && <div className="text-xs opacity-75 capitalize">{eventLocation.type}</div>}
+                <div className="text-xs opacity-75">📍 Lokasi Event</div>
+                <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-2 border-r-2 border-t-2 border-transparent border-t-black"></div>
+              </div>
+            )}
+          </div>
+        </Marker>
+
+        {/* Current location marker (optional, only if userLoc is provided) */}
+        {userLoc && (
+          <Marker longitude={userLoc.longitude} latitude={userLoc.latitude} anchor="center">
             <div
               className="relative group"
-              onMouseEnter={() => setHoveredMarker("event")}
+              onMouseEnter={() => setHoveredMarker("current")}
               onMouseLeave={() => setHoveredMarker(null)}
-              onClick={() => onEventClick?.(eventLocation)}
+              onClick={() => onCurrentLocationClick?.()}
             >
-              {/* Event marker */}
-              <div className="w-12 h-12 bg-red-500 rounded-full border-3 border-white shadow-lg flex items-center justify-center cursor-pointer hover:scale-110 transition-transform">
-                <Calendar className="h-6 w-6 text-white" />
+              {/* Current location marker visual */}
+              <div className="w-10 h-10 bg-primary rounded-full border-2 border-white shadow-lg flex items-center justify-center cursor-pointer hover:scale-110 transition-transform">
+                <MapPin className="h-5 w-5 text-white" />
               </div>
 
               {/* Tooltip on hover */}
-              {hoveredMarker === "event" && (
-                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-3 px-3 py-2 bg-black text-white text-sm rounded whitespace-nowrap opacity-100 transition-opacity pointer-events-none z-20 max-w-xs">
-                  <div className="font-medium">{eventLocation.name}</div>
-                  {eventLocation.type && <div className="text-xs opacity-75 capitalize">{eventLocation.type}</div>}
-                  <div className="text-xs opacity-75">📍 Event Location</div>
-                  {/* Tooltip arrow */}
-                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-2 border-r-2 border-t-2 border-transparent border-t-black"></div>
+              {hoveredMarker === "current" && (
+                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-3 px-3 py-2 bg-black text-white text-sm rounded whitespace-nowrap opacity-100 transition-opacity pointer-events-none z-20">
+                  <div className="font-medium">Lokasi Sekarang</div>
+                  <div className="text-xs opacity-75">📍 Lokasi Anda</div>
+                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-2 border-r-2 border-t-2 border-2 border-transparent border-t-black"></div>
                 </div>
               )}
             </div>
           </Marker>
-          
+        )}
+      </Map>
 
-          {/* Current location marker (optional) */}
-          {userLoc && (
-            <Marker longitude={userLoc.longitude} latitude={userLoc.latitude} anchor="center">
-              <div
-                className="relative group"
-                onMouseEnter={() => setHoveredMarker("current")}
-                onMouseLeave={() => setHoveredMarker(null)}
-                onClick={() => onCurrentLocationClick?.()}
-              >
-                {/* Current location marker */}
-                <div className="w-10 h-10 bg-blue-500 rounded-full border-2 border-white shadow-lg flex items-center justify-center cursor-pointer hover:scale-110 transition-transform">
-                  <MapPin className="h-5 w-5 text-white" />
-                </div>
-
-                {/* Tooltip on hover */}
-                {hoveredMarker === "current" && (
-                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-3 px-3 py-2 bg-black text-white text-sm rounded whitespace-nowrap opacity-100 transition-opacity pointer-events-none z-20">
-                    <div className="font-medium">Lokasi Saat Ini</div>
-                    <div className="text-xs opacity-75">📍 Your Location</div>
-                    {/* Tooltip arrow */}
-                    <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-2 border-r-2 border-t-2 border-transparent border-t-black"></div>
-                  </div>
-                )}
-              </div>
-            </Marker>
-          )}
-        </Map>
-      </div>
-
-
-     
+      {/* Floating Recenter Button (Optional, if this component manages its own recentering) */}
+      {/* Assuming this button is managed by the parent MapsPage, removed from here */}
+      {/* Radar Pulse Effect (Optional, assuming parent handles this if it's for user location) */}
     </div>
   )
 }
