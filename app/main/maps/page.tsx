@@ -91,9 +91,9 @@ export default function Maps() {
         data,
     } = useQuery<EventsApiResponse, Error>({ // Gunakan EventsApiResponse sebagai tipe data
         enabled: !!userLocation,
-        queryKey: ["events-nearby", {
-            lat: userLocation?.latitude ?? 0, lng: userLocation?.longitude ?? 0, radarRadius, selectedCategoryIds
-        }] as const,
+        queryKey: ["events-nearby",
+           userLocation?.latitude ?? 0, userLocation?.longitude ?? 0, radarRadius, selectedCategoryIds
+        ] as const,
         queryFn: fetchEvents,
         staleTime: 1000 * 60,
         refetchOnWindowFocus: true,
