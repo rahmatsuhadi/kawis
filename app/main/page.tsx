@@ -4,32 +4,25 @@ import EventList from "@/components/event/EventList"
 
 
 import { QueryFunctionContext, useInfiniteQuery } from "@tanstack/react-query";
-import { EventPost, PostLike, User } from "@prisma/client";
 import { Loader2 } from "lucide-react";
 import PostCardSkeleton from "@/components/post/PostSkeleton";
 import { Button } from "@/components/ui/button";
 import PostCard from "@/components/post/PostCard";
+import { IPost } from "@/lib/type";
 
 
 
-export interface PostResponse extends EventPost {
-    images: string[]
-    postLike: PostLike[]
-    event: {
-        name: string
-    }
-    user: User
-}
+
 
 
 interface PostsApiResponse {
-    posts: PostResponse[]; // Array event sesuai tipe Event di atas
+    posts: IPost[]; // Array event sesuai tipe Event di atas
     total: number; // Total jumlah event
 }
 
-export const POSTS_PER_PAGE = 4;
+const POSTS_PER_PAGE = 4;
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-async function fetchPosts(context: QueryFunctionContext): Promise<PostsApiResponse> {
+async function fetchPosts(context: QueryFunctionContext) {
     //  const [_key] =  context.queryKey;
 
     const pageParam = context.pageParam

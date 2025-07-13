@@ -61,7 +61,7 @@ export default function EventListSimple({
               {/* Event Image */}
               <div className="relative h-32">
                 <Image
-                  src={event.images[0]?.imageUrl || "/placeholder.svg?height=128&width=200"}
+                  src={event.images[0] || "/placeholder.svg?height=128&width=200"}
                   alt={event.name}
                   fill
                   className="object-cover"
@@ -142,7 +142,7 @@ export default function EventListSimple({
                     className={`${compact ? "w-12 h-12" : "w-16 h-16"} rounded-lg overflow-hidden bg-gray-100 shadow-sm`}
                   >
                     <Image
-                      src={event.images[0]?.imageUrl || "/placeholder.svg?height=64&width=64"}
+                      src={event.images[0] || "/placeholder.svg?height=64&width=64"}
                       alt={event.name}
                       width={compact ? 48 : 64}
                       height={compact ? 48 : 64}
