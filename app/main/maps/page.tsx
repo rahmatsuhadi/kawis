@@ -162,19 +162,19 @@ export default function Maps() {
 
 
                     <div>
-                        <div className="grid grid-cols-1 lg:grid-cols-6 gap-5 mx-auto">
+                        <div className="grid grid-cols-1 lg:grid-cols-6 gap-5 mx-auto mb-20 ">
                             {/* <div className="w-full justify-center"> */}
-                            <div className="relative flex justify-center flex-col col-span-4 ">
-                                <h2 className="text-base xl:text-xl font-semibold text-gray-900 ml-6 mb-4">Events Maps</h2>
+                            <div className="relative flex justify-center flex-col col-span-6  lg:col-span-4  ">
+                                <h2 className="text-base xl:text-xl font-semibold text-gray-900 lg:ml-6 mb-4">Events Maps</h2>
 
-                                <div className="bg-orange-50 p-3 rounded-lg border border-orange-200 mb-5 mx-6">
+                                <div className="bg-orange-50 p-3 rounded-lg border border-orange-200 mb-5 lg:mx-6">
                                     <p className="text-xs text-orange-700">
                                         <strong>🎯 Update Real-time:</strong> Peta akan otomatis memperbarui event berdasarkan lokasi dan
                                         radius yang Anda pilih.
                                     </p>
                                 </div>
                                 {/* Map container with circular clip */}
-                                <div className="w-[96%] h-[600px] overflow-hidden bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg mx-6 mb-6 relative">
+                                <div className="w-[96%] h-[600px] overflow-hidden bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg  lg:mx-6 mb-6 relative">
 
                                     {userLocation && (
                                         <Map
@@ -298,7 +298,7 @@ export default function Maps() {
                             {/* </div> */}
 
                             {/* Events List */}
-                            <div className="space-y-4 col-span-2">
+                            <div className="space-y-4 col-span-6 lg:col-span-2">
                                 <div className="flex flex-col">
                                     <h2 className="text-base xl:text-xl  font-semibold text-gray-900">Event Terdekat</h2>
                                     <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-200">
