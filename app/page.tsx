@@ -414,8 +414,8 @@ export default function LandingPage() {
                   ))}
                 </div>
                 <p className="text-gray-600 mb-6 italic">
-                  "Aplikasi yang luar biasa! Saya bisa menemukan event musik jazz di Jakarta dengan mudah. Fitur
-                  radar-nya sangat membantu untuk melihat event terdekat."
+                  {`"Aplikasi yang luar biasa! Saya bisa menemukan event musik jazz di Jakarta dengan mudah. Fitur
+                  radar-nya sangat membantu untuk melihat event terdekat."`}
                 </p>
                 <div className="flex items-center">
                   <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full flex items-center justify-center mr-4">
@@ -438,8 +438,8 @@ export default function LandingPage() {
                   ))}
                 </div>
                 <p className="text-gray-600 mb-6 italic">
-                  "Sebagai event organizer, platform ini sangat membantu untuk mempromosikan acara saya. Interface-nya
-                  user-friendly dan reach-nya luas."
+                  {`"Sebagai event organizer, platform ini sangat membantu untuk mempromosikan acara saya. Interface-nya
+                  user-friendly dan reach-nya luas."`}
                 </p>
                 <div className="flex items-center">
                   <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center mr-4">
@@ -462,8 +462,8 @@ export default function LandingPage() {
                   ))}
                 </div>
                 <p className="text-gray-600 mb-6 italic">
-                  "Fitur komunitas dan feed-nya membuat saya bisa terhubung dengan orang-orang yang punya minat sama.
-                  Recommended banget!"
+                  {`"Fitur komunitas dan feed-nya membuat saya bisa terhubung dengan orang-orang yang punya minat sama.
+                  Recommended banget!"`}
                 </p>
                 <div className="flex items-center">
                   <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center mr-4">
