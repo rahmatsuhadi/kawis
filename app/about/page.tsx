@@ -194,9 +194,9 @@ export default function AboutPage() {
               </p>
 
               <p>
-                Fitur radar interaktif menjadi inovasi utama kami, memungkinkan pengguna untuk "melihat" event di
+                {`Fitur radar interaktif menjadi inovasi utama kami, memungkinkan pengguna untuk "melihat" event di
                 sekitar mereka dengan cara yang visual dan intuitif. Kami percaya bahwa teknologi harus mempermudah
-                hidup, bukan memperumitnya.
+                hidup, bukan memperumitnya.`}
               </p>
 
               <p>
